@@ -49,7 +49,7 @@ ingress:
 services:
   - name: api
     github:
-      repo: MhmdHammoud702/TutWithUs-AI-Assistant
+      repo: eliesaide1/tutwithus-ai-assistant-calls
       branch: main
       deploy_on_push: true
     source_dir: /
@@ -145,7 +145,7 @@ services:
 static_sites:
   - name: web
     github:
-      repo: MhmdHammoud702/TutWithUs-AI-Assistant
+      repo: eliesaide1/tutwithus-ai-assistant-calls
       branch: main
       deploy_on_push: true
     source_dir: /
@@ -194,3 +194,12 @@ static_sites:
 # REDIS_URL is set. Raising instance_count above 1 without Redis multiplies
 # the real cap by the instance count.
 # -----------------------------------------------------------------------------
+
+# The attached DigitalOcean Managed MongoDB cluster. Keeping this block means
+# applying the spec preserves the attachment and the app's automatic
+# trusted-source entry on the cluster.
+databases:
+  - name: tutwithus-ai-mongo
+    cluster_name: tutwithus-ai-mongo
+    engine: MONGODB
+    production: true
