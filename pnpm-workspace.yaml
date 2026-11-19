@@ -1,0 +1,10 @@
+packages:
+  - apps/*
+  - evals
+allowBuilds:
+  esbuild: true
+  # Optional native speed-up for msgpackr (used by BullMQ); the JS fallback is fine.
+  msgpackr-extract: false
+  # LiveKit packages use no-op install hooks to suppress implicit node-gyp builds.
+  '@livekit/blingfire': true
+  '@livekit/local-inference': true

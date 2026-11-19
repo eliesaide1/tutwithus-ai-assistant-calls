@@ -1,0 +1,333 @@
+.calls-page,
+.contacts-page {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  overflow: auto;
+  padding: clamp(24px, 4vw, 48px);
+  border: 0;
+  border-radius: 0;
+  background: #fbfcfd;
+  box-shadow: 10px 0 30px rgb(26 56 74 / 6%);
+}
+
+.page-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 32px;
+}
+
+.page-heading__description {
+  margin: 9px 0 0;
+  color: #738a96;
+  font-size: 13px;
+}
+
+.preview-label {
+  padding: 8px 11px;
+  border: 1px solid #f0dfc2;
+  border-radius: 999px;
+  color: #9a6a22;
+  background: #fff8eb;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.calls-section {
+  max-width: 960px;
+  margin-top: 28px;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 13px;
+}
+
+.section-title h2 {
+  margin: 0;
+  color: #274858;
+  font-size: 15px;
+}
+
+.section-title > span {
+  color: #82959e;
+  font-size: 11px;
+}
+
+.text-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 10px;
+  color: #53717f;
+  background: #f4f7f8;
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.text-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+.list-empty {
+  padding: 22px 10px;
+  color: #82959e;
+  font-size: 12px;
+  text-align: center;
+}
+
+.call-list {
+  display: grid;
+  border-top: 1px solid #edf1f2;
+}
+
+.call-row {
+  display: flex;
+  min-height: 68px;
+  align-items: center;
+  gap: 13px;
+  padding: 0 10px;
+  border-bottom: 1px solid #edf1f2;
+  transition: background 140ms ease;
+}
+
+.call-row:hover {
+  background: #f5f8fa;
+}
+
+.call-row__identity {
+  display: grid;
+  flex: 1;
+  gap: 5px;
+}
+
+.call-row__identity strong {
+  color: #2a4655;
+  font-size: 12px;
+}
+
+.call-row__identity > span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #82959d;
+  font-size: 10px;
+}
+
+.call-row__identity svg {
+  width: 13px;
+  height: 13px;
+}
+
+.call-row__identity .call-row__missed {
+  color: #cb6c64;
+}
+
+.call-row__time,
+.call-row__duration {
+  color: #8799a0;
+  font-size: 10px;
+}
+
+.quick-contacts {
+  display: grid;
+  grid-template-columns: 1fr;
+  border-top: 1px solid #edf1f2;
+}
+
+.quick-contact {
+  display: flex;
+  width: 100%;
+  min-height: 68px;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 0;
+  border-bottom: 1px solid #edf1f2;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  transition: background 140ms ease;
+}
+
+.quick-contact:hover {
+  background: #f5f8fa;
+}
+
+.quick-contact > span:nth-child(2) {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+  gap: 4px;
+}
+
+.quick-contact strong,
+.quick-contact small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.quick-contact strong {
+  color: #2b4756;
+  font-size: 11px;
+}
+
+.quick-contact small {
+  color: #8a9ba2;
+  font-size: 9px;
+}
+
+.quick-contact > svg {
+  width: 17px;
+  height: 17px;
+  color: #317b74;
+}
+
+.call-overlay {
+  position: fixed;
+  z-index: 10;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgb(13 34 48 / 56%);
+  backdrop-filter: blur(5px);
+}
+
+.call-card {
+  position: relative;
+  display: flex;
+  width: min(420px, 100%);
+  min-height: 445px;
+  flex-direction: column;
+  align-items: center;
+  padding: 42px 28px 23px;
+  border: 1px solid rgb(255 255 255 / 70%);
+  border-radius: 26px;
+  color: #23465d;
+  font-family: var(--font-ui);
+  background:
+    radial-gradient(circle at 50% 20%, rgb(255 205 5 / 13%), transparent 40%),
+    #f7fbfa;
+  box-shadow: 0 32px 90px rgb(5 26 39 / 30%);
+}
+
+.call-card button {
+  font-family: var(--font-ui);
+}
+
+.call-card__close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: grid;
+  width: 35px;
+  height: 35px;
+  place-items: center;
+  border: 0;
+  border-radius: 11px;
+  color: #65808a;
+  background: rgb(255 255 255 / 70%);
+  cursor: pointer;
+}
+
+.call-card__close svg {
+  width: 18px;
+  height: 18px;
+}
+
+.call-card .eyebrow {
+  margin-bottom: 28px;
+}
+
+.call-card h2 {
+  margin: 18px 0 5px;
+  color: var(--color-brand-blue-dark);
+  font-size: 24px;
+  font-weight: 650;
+  letter-spacing: -0.025em;
+}
+
+.call-card__phone,
+.call-card__state {
+  margin: 0;
+  color: #78909a;
+  font-size: 14px;
+}
+
+.call-card__state {
+  margin-top: 12px;
+  color: var(--color-brand-blue);
+  font-weight: 600;
+}
+
+.call-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  margin-top: auto;
+  padding-top: 28px;
+}
+
+.call-control {
+  display: grid;
+  width: 59px;
+  justify-items: center;
+  gap: 8px;
+  border: 0;
+  color: #5e7583;
+  background: transparent;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.call-control svg {
+  width: 48px;
+  height: 48px;
+  padding: 14px;
+  border-radius: 50%;
+  color: #42606d;
+  background: #e5edef;
+}
+
+.call-control--active svg {
+  color: #ffffff;
+  background: var(--color-brand-blue);
+}
+
+.call-control--end svg {
+  color: white;
+  background: #d66f68;
+  transform: rotate(135deg);
+}
+
+.call-control--answer svg {
+  color: white;
+  background: var(--color-brand-blue);
+}
+
+.call-card__notice {
+  margin: 28px 0 0;
+  color: #718692;
+  font-size: 11px;
+  text-align: center;
+}
+
+@media (max-width: 760px) {
+  .calls-page,
+  .contacts-page {
+    margin: 0 0 66px;
+    border: 0;
+    border-radius: 0;
+  }
+}

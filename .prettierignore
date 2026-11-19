@@ -1,0 +1,10 @@
+node_modules/
+dist/
+coverage/
+pnpm-lock.yaml
+packages/contracts/openapi/
+evals/reports/
+.husky/
+# Docs are hand-formatted; Prettier would re-align every table.
+*.md
+.vscode/

@@ -1,0 +1,40 @@
+import type { Logger } from '../lib/logger.js';
+import type { ApiConfig } from '../config/env.js';
+import type { RealtimeProvider } from '../lib/openai/realtime-client.js';
+import type { AdminUserRepository } from '../modules/admin-users/admin-user.repository.js';
+import type { AuditRepository } from '../modules/audit/audit.repository.js';
+import type { BookingRepository } from '../modules/bookings/booking.repository.js';
+import type { EscalationRepository } from '../modules/escalations/escalation.repository.js';
+import type { AgentSettingsRepository } from '../modules/settings/agent-settings.repository.js';
+import type { KnowledgeIngestionService } from '../modules/knowledge/knowledge-ingestion.service.js';
+import type { KnowledgeRepository } from '../modules/knowledge/knowledge.repository.js';
+import type { VoiceSessionRepository } from '../modules/voice-sessions/voice-session.repository.js';
+import type { ReadinessCheck } from './health.routes.js';
+import type { ActiveCallRegistry } from '../core/session/active-calls.js';
+import type { ToolGateway } from '../core/tools/tool-gateway.js';
+import type { LiveCallLimiter } from '../lib/live-calls.js';
+import type { CustomerDirectory } from '../platform/customer-directory.js';
+import type { PlatformAdapter } from '../platform/platform-adapter.js';
+import type { MaintenanceJobs } from '../jobs/maintenance-jobs.js';
+
+export type AppDependencies = {
+  config: ApiConfig;
+  logger: Logger;
+  maintenanceJobs: MaintenanceJobs;
+  readinessChecks: ReadinessCheck[];
+  voiceSessionRepository: VoiceSessionRepository;
+  realtimeProvider: RealtimeProvider;
+  adminUserRepository: AdminUserRepository;
+  knowledgeRepository: KnowledgeRepository;
+  // Tools the voice agent may call, run only by the session controller.
+  toolGateway: ToolGateway;
+  liveCalls: LiveCallLimiter;
+  activeCalls: ActiveCallRegistry;
+  platformAdapter: PlatformAdapter;
+  customerDirectory: CustomerDirectory;
+  knowledgeIngestion: KnowledgeIngestionService;
+  bookingRepository: BookingRepository;
+  escalationRepository: EscalationRepository;
+  settingsRepository: AgentSettingsRepository;
+  auditRepository: AuditRepository;
+};

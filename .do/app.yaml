@@ -1,0 +1,196 @@
+# DigitalOcean App Platform spec for the TutWithUs AI Receptionist.
+#
+# Deploy:  doctl apps create --spec .do/app.yaml
+# Update:  doctl apps update <APP_ID> --spec .do/app.yaml
+#
+# NO SECRETS BELONG IN THIS FILE — it is committed to git. Every secret is
+# listed at the bottom of this file as a comment and must be set in the
+# DigitalOcean dashboard (or with `doctl apps update --spec` from an
+# untracked overlay) before the first deploy can become healthy.
+#
+# The web app and the API share one origin: the frontend is served at / and
+# the API at /api, so VITE_API_BASE_URL stays unset and no CORS origin is
+# needed. Keep it that way, or set both together.
+name: tutwithus-ai-assistant
+
+# Realtime voice is latency-sensitive. fra (Frankfurt) is the closest DO
+# region to Gulf/Saudi callers; nyc adds roughly 90-120ms each way.
+region: fra
+
+ingress:
+  rules:
+    # Longest prefix wins, but order is kept explicit for readability.
+    - match:
+        path:
+          prefix: /api
+      component:
+        name: api
+        # The API mounts its own routers at /api/v1/*, so the prefix must
+        # survive the proxy hop rather than being stripped.
+        preserve_path_prefix: true
+    - match:
+        path:
+          prefix: /healthz
+      component:
+        name: api
+        preserve_path_prefix: true
+    - match:
+        path:
+          prefix: /readyz
+      component:
+        name: api
+        preserve_path_prefix: true
+    - match:
+        path:
+          prefix: /
+      component:
+        name: web
+
+services:
+  - name: api
+    github:
+      repo: MhmdHammoud702/TutWithUs-AI-Assistant
+      branch: main
+      deploy_on_push: true
+    source_dir: /
+    environment_slug: node-js
+    build_command: corepack pnpm install --frozen-lockfile && corepack pnpm --filter @tutwithus/api build
+    run_command: corepack pnpm --filter @tutwithus/api start:prod
+    instance_size_slug: apps-s-1vcpu-1gb
+    instance_count: 1
+    # App Platform injects PORT; config/env.ts reads PORT before API_PORT.
+    http_port: 8080
+    health_check:
+      http_path: /healthz
+      initial_delay_seconds: 20
+      period_seconds: 10
+      failure_threshold: 3
+    envs:
+      - key: NODE_ENV
+        scope: RUN_AND_BUILD_TIME
+        value: production
+      - key: LOG_LEVEL
+        scope: RUN_TIME
+        value: info
+      # One proxy hop: App Platform's edge router sits in front of the service.
+      - key: API_TRUST_PROXY_HOPS
+        scope: RUN_TIME
+        value: '1'
+
+      - key: TUTWITHUS_API_URL
+        scope: RUN_TIME
+        value: https://api.tutwithus.com
+      - key: TUTWITHUS_TIMEOUT_MS
+        scope: RUN_TIME
+        value: '5000'
+      - key: TUTWITHUS_AUTH_LOGIN_PATH
+        scope: RUN_TIME
+        value: /auth/login
+
+      - key: OPENAI_REALTIME_MODEL
+        scope: RUN_TIME
+        value: gpt-realtime-2.1-mini
+      - key: OPENAI_EMBEDDING_MODEL
+        scope: RUN_TIME
+        value: text-embedding-3-small
+      - key: ELEVENLABS_MODEL_ID
+        scope: RUN_TIME
+        value: eleven_multilingual_v2
+
+      - key: VOICE_TURN_DETECTION
+        scope: RUN_TIME
+        value: server_vad
+      - key: VOICE_VAD_THRESHOLD
+        scope: RUN_TIME
+        value: '0.8'
+      - key: VOICE_SILENCE_MS
+        scope: RUN_TIME
+        value: '500'
+      - key: VOICE_VAD_EAGERNESS
+        scope: RUN_TIME
+        value: auto
+
+      - key: CONSENT_VERSION
+        scope: RUN_TIME
+        value: 2026-11-04.1
+      - key: MAX_CALL_SEC
+        scope: RUN_TIME
+        value: '300'
+      - key: MAX_CONCURRENT_CALLS
+        scope: RUN_TIME
+        value: '20'
+      - key: IDLE_TIMEOUT_SEC
+        scope: RUN_TIME
+        value: '90'
+      - key: RETENTION_DAYS
+        scope: RUN_TIME
+        value: '30'
+
+      # The WhatsApp calling agent stays off until Meta SIP and LiveKit
+      # dispatch are configured; enabling it also requires the LIVEKIT_* and
+      # WHATSAPP_* secrets listed at the bottom of this file.
+      - key: WHATSAPP_CALLING_ENABLED
+        scope: RUN_TIME
+        value: 'false'
+
+      # CORS_ALLOWED_ORIGINS is deliberately omitted: it defaults to an empty
+      # allowlist, which is correct while the frontend is same-origin.
+
+  # CONSENT_TEXT_EN / _FR / _AR have no defaults in config/env.ts, so the API
+  # will not boot without them — but the strings in .env.example are marked
+  # "temporary development notices, not approved production consent text".
+  # They are intentionally NOT set here. Set them in the dashboard with text
+  # your legal reviewer has approved before taking real calls.
+
+static_sites:
+  - name: web
+    github:
+      repo: MhmdHammoud702/TutWithUs-AI-Assistant
+      branch: main
+      deploy_on_push: true
+    source_dir: /
+    environment_slug: node-js
+    build_command: corepack pnpm install --frozen-lockfile && corepack pnpm --filter @tutwithus/web build
+    output_dir: apps/web/dist
+    # Client-side routing: /admin/* must fall through to the SPA shell.
+    catchall_document: index.html
+    # VITE_API_BASE_URL is intentionally unset so the bundle calls relative
+    # /api paths and stays same-origin with the API component above.
+
+# -----------------------------------------------------------------------------
+# Secrets to set before the first deploy (dashboard > Settings > App-Level
+# Environment Variables, or `doctl apps update`). Encrypt each as a SECRET.
+#
+# Required for the API to boot at all:
+#   MONGODB_URI                 mongodb+srv connection string
+#   CONSENT_TEXT_EN             approved consent notice (English)
+#   CONSENT_TEXT_FR             approved consent notice (French)
+#   CONSENT_TEXT_AR             approved consent notice (Arabic)
+#
+# Required because NODE_ENV=production (see the refinements in config/env.ts):
+#   OPENAI_API_KEY              server-side only, never a VITE_ var
+#   ADMIN_JWT_SECRET            >= 32 chars, stable or admin sessions drop
+#
+# Required for their features, generate stable random values:
+#   MEMBER_VERIFICATION_SECRET  keys member-verification rate limits
+#   BROWSER_IDENTITY_SECRET     signed portal phone handoffs
+#   CALLER_HASH_SECRET          >= 16 chars; changing it unlinks repeat callers
+#
+# Saudi Arabic voice synthesis:
+#   ELEVENLABS_API_KEY
+#   ELEVENLABS_SAUDI_ARABIC_VOICE_ID
+#
+# Optional:
+#   REDIS_URL                   without it, limits are per-instance and
+#                               maintenance runs inline (see note below)
+#
+# Only when WHATSAPP_CALLING_ENABLED=true:
+#   WHATSAPP_APP_SECRET, WHATSAPP_WEBHOOK_VERIFY_TOKEN,
+#   WHATSAPP_PHONE_NUMBER_ID, WHATSAPP_ACCESS_TOKEN,
+#   WHATSAPP_LIVEKIT_SIP_TRUNK_ID, LIVEKIT_URL, LIVEKIT_API_KEY,
+#   LIVEKIT_API_SECRET, LIVEKIT_WHATSAPP_AGENT_NAME
+#
+# NOTE ON SCALING: MAX_CONCURRENT_CALLS is enforced per process unless
+# REDIS_URL is set. Raising instance_count above 1 without Redis multiplies
+# the real cap by the instance count.
+# -----------------------------------------------------------------------------

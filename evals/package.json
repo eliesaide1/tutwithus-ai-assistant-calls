@@ -1,0 +1,20 @@
+{
+  "name": "@tutwithus/evals",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "eval": "node --env-file-if-exists=../apps/api/.env --import tsx runner/run.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "openai": "^7.47.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.0",
+    "tsx": "^4.23.0",
+    "typescript": "~5.9.0",
+    "vitest": "^3.2.7"
+  }
+}

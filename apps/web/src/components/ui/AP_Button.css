@@ -1,0 +1,62 @@
+.ap-button {
+  display: inline-flex;
+  min-height: 2.4rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.8rem;
+  border: 1px solid #dce5eb;
+  border-radius: 0.65rem;
+  color: var(--color-primary-dark);
+  background: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 720;
+  text-align: center;
+  transition:
+    border-color 150ms ease,
+    background-color 150ms ease,
+    opacity 150ms ease;
+}
+
+.ap-button:hover:not(:disabled) {
+  border-color: #b6cbd3;
+  background: #f7fbfc;
+}
+
+.ap-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.ap-button--primary {
+  border-color: transparent;
+  color: #fff;
+  background: linear-gradient(115deg, #0f4d81, #087e83);
+}
+
+.ap-button--primary:hover:not(:disabled) {
+  border-color: transparent;
+  background: linear-gradient(115deg, #0b416d, #076f74);
+}
+
+.ap-button--danger {
+  border-color: #f1d8d6;
+  color: #9a3c3c;
+}
+
+.ap-button--danger:hover:not(:disabled) {
+  border-color: #e8bdb9;
+  background: #fff7f6;
+}
+
+.ap-button--ghost {
+  border-color: transparent;
+  background: transparent;
+}
+
+.ap-button--ghost:hover:not(:disabled) {
+  border-color: transparent;
+  background: #f3f7f8;
+}

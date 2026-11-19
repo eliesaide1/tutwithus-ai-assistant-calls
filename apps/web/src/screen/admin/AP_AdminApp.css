@@ -1,0 +1,19 @@
+.ap-admin-page {
+  min-height: 100vh;
+  min-height: 100svh;
+}
+
+.ap-admin-page {
+  background:
+    radial-gradient(
+      ellipse at 82% 43%,
+      rgb(42 179 169 / 9%),
+      transparent 31rem
+    ),
+    radial-gradient(
+      ellipse at 8% 12%,
+      rgb(255 200 87 / 11%),
+      transparent 24rem
+    ),
+    var(--color-background);
+}

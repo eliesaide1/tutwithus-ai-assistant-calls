@@ -1,0 +1,44 @@
+{
+  "name": "tutwithus-receptionist",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.16.1",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "dev": "corepack pnpm --filter @tutwithus/web dev",
+    "dev:stack": "corepack pnpm --recursive --parallel --filter @tutwithus/api --filter @tutwithus/web run dev",
+    "dev:api": "corepack pnpm --filter @tutwithus/api dev",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "corepack pnpm -r --if-present typecheck",
+    "test": "corepack pnpm -r --if-present test",
+    "build": "corepack pnpm -r --if-present build",
+    "check": "corepack pnpm lint && corepack pnpm format:check && corepack pnpm typecheck && corepack pnpm test && corepack pnpm build",
+    "job:ping": "corepack pnpm --filter @tutwithus/api job:ping",
+    "eval": "corepack pnpm --filter @tutwithus/evals eval",
+    "contracts:openapi": "corepack pnpm --filter @tutwithus/api openapi:generate",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,mjs}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,css,html,yml,yaml}": "prettier --write"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.14.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.14.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.0",
+    "nodemon": "^3.1.14",
+    "prettier": "^3.9.10",
+    "typescript": "~5.9.0",
+    "typescript-eslint": "^8.72.1"
+  }
+}

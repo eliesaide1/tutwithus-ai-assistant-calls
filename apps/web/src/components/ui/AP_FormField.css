@@ -1,0 +1,40 @@
+.ap-form-field {
+  display: grid;
+  min-width: 0;
+  gap: 0.4rem;
+  color: var(--color-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.ap-form-field-group {
+  display: grid;
+  min-width: 0;
+  gap: 0.35rem;
+}
+
+.ap-form-field__hint {
+  color: var(--color-muted);
+  font-size: 0.67rem;
+  font-weight: 450;
+  line-height: 1.5;
+}
+
+.ap-form-field > input,
+.ap-form-field > select,
+.ap-form-field > textarea {
+  width: 100%;
+  min-height: 2.5rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.65rem;
+  color: var(--color-text);
+  background: #fff;
+  font: inherit;
+  font-size: 0.77rem;
+}
+
+.ap-form-field > textarea {
+  resize: vertical;
+  line-height: 1.55;
+}
