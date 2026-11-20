@@ -114,7 +114,7 @@ export function createSearchTutorProfilesTool(
           ),
         },
         followUpInstructions: namesOnly
-          ? "Reply with all returned tutors' fullName values, exactly as written, in one concise sentence. Do not omit or paginate names. Preserve requestedSubject internally and never rename, correct, or paraphrase it in a later confirmation. Do not mention subjects, degrees, schools, curriculums, ratings, matching logic, availability, profile pictures, or offer additional help."
+          ? "Say only the returned tutors' fullName values, exactly as written. If there is one match, say that one full name once and stop. If there are multiple matches, say every full name once in returned order, with a brief pause between names. Do not add a preamble, paraphrase or translate names, mention subjects or matching logic, or offer availability, booking, or other help. For Arabic calls, use concise Saudi Arabic for any necessary connecting words; do not imitate another Arabic dialect. Preserve requestedSubject internally."
           : "Answer only from the returned profile fields and in the caller's language. Say each tutor's fullName exactly as returned so the browser can show the matching picture. Be concise and mention only details relevant to the question. Never read, describe, or mention profilePic or uiTutorProfiles. Do not infer missing facts. If ratingPublished is false, say no rating is published only when the caller asked about rating. Do not claim booking eligibility or an open slot. For a calendar request, pass the returned profile id to check_tutor_calendar when that tool is listed; do not require a course name. Never route tutor availability to bundle recommendation.",
       };
     },

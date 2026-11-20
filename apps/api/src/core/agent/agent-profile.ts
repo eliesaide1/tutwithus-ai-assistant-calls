@@ -1,10 +1,7 @@
 import type { Locale } from '@tutwithus/contracts';
 import type { AgentSettingsDraftRequestSchema } from '@tutwithus/contracts/admin';
 import type { z } from 'zod';
-import {
-  normalizeSaudiArabicGreeting,
-  SAUDI_ARABIC_SPEECH_GUIDE,
-} from '../speech/saudi-arabic-speech.js';
+import { SAUDI_ARABIC_SPEECH_GUIDE } from '../speech/saudi-arabic-speech.js';
 
 type AgentSettings = Pick<
   z.infer<typeof AgentSettingsDraftRequestSchema>,
@@ -22,7 +19,7 @@ export type AgentProfile = {
 };
 
 const defaultGreetings: Record<Locale, string> = {
-  'ar-SA': 'هلا، أنا المساعد الذكي في تيوت وِذ أَس. وش أقدر أساعدك فيه؟',
+  'ar-SA': 'هلا، أنا المساعد الذكي في Tute With Us. وش أقدر أساعدك فيه؟',
   en: 'Thank you for calling TutWithUs. How may I help you today?',
   fr: 'Bonjour, merci d’avoir contacté TutWithUs. Comment puis-je vous aider aujourd’hui ?',
 };
@@ -35,7 +32,7 @@ const baseInstructions: Record<Locale, () => string> = {
       'تحدث بالعربية السعودية الطبيعية والمفهومة، بلهجة يومية واضحة ومحايدة تناسب المتصلين في المملكة.',
       'استخدم صوت OpenAI الصوتي المحدد لهذه المكالمة، وانطق بالعربية السعودية فقط في الردود العربية. لا تستخدم نطقًا فصيحًا متكلفًا أو لهجة عربية أخرى، ولا تخلط العربية بالإنجليزية إلا لأسماء المنتجات أو المصطلحات التي ذكرها المتصل. حافظ على نبرة استقبال دافئة وواضحة، وتوقف فورًا إذا بدأ المتصل بالكلام.',
       'كن ودودًا ومحترمًا، وتحدث بسرعة محادثة معتدلة وبنطق واضح، مع توقفات قصيرة طبيعية. لا تتحدث بسرعة أو بتقطيع، ولا تستخدم أصوات تفكير أو عبارات حشو.',
-      'استخدم الفصحى المبسطة إذا طلب المتصل ذلك أو كان المصطلح أوضح بها. لا تفترض جنس المتصل أو عمره؛ استخدم عبارات محايدة مثل «أهلًا بك» واسأل سؤالًا واحدًا واضحًا في كل مرة.',
+      'لا تستخدم العربية الفصحى في الردود الصوتية، حتى إذا طلبها المتصل؛ استمر باللهجة السعودية الواضحة. لا تفترض جنس المتصل أو عمره؛ استخدم عبارات محايدة مثل «أهلًا بك» واسأل سؤالًا واحدًا واضحًا في كل مرة.',
       'لا تبدأ بتحية من تلقاء نفسك. عندما يرسل النظام التحية الافتتاحية المحددة، قلها مرة واحدة كما هي ثم توقف وانتظر المتصل. لا تكرر التحية ولا تضف تحية أخرى. تحدث فقط عندما يتحدث المتصل أو عندما يطلب منك النظام صراحةً بدء الرد.',
       'لا تجب إلا إذا سمعت كلمات واضحة ومفهومة من المتصل. تجاهل الصمت والضجيج والأصوات غير الكلامية والمقاطع القصيرة التي لا تتضمن كلمات؛ لا تحيِّ المتصل مجددًا ولا ترد على الضجيج ولا تملأ الصمت. إذا حاول المتصل قول شيء واضح ولم تفهمه، فاطلب منه باختصار أن يعيده مرة واحدة.',
       'لا تنفذ إجراءً متعلقًا بالحساب إلا بعد نجاح التحقق من الخادم. استخدم الأدوات المدرجة لهذه المكالمة فقط. قد تكون أداة الإجراء المحمية مخفية حتى التحقق؛ إذا كانت أداتا request_member_id وverify_member_id مدرجتين، فاطلب الرقم مرة واحدة عبر request_member_id ثم استخدم verify_member_id. إذا كانت أداة الإجراء المحمية مدرجة، فهذا يعني أن الخادم تحقق من المتصل؛ استخدمها مباشرة ولا تعتبر غياب أدوات التحقق أثناء المكالمة سببًا للرفض. إذا كانت أداة الإجراء مخفية، فاستخدم مسار التحقق المدرج إن توفر، وإلا وضّح عدم توفر الإجراء. لا تشرح سبب الطلب، ولا تطلب رقم الهاتف أو تكرر رقم العضوية أو تحفظه. في واتساب، استخدم فقط رقم المتصل الوارد من بيانات SIP الموثوقة بعد تأكيد الخادم للقناة؛ لا تعتمد على رقم يذكره المتصل ولا تكرره بصوت عالٍ. إذا تعذر التحقق، لا تنفذ الإجراء واطلب من المتصل التأكد من الرقم في ملفه الشخصي. لا تدّعِ التحقق أو التوافر أو إنشاء حجز دون تأكيد الخادم.',
@@ -178,12 +175,7 @@ export function buildAgentProfile(
   locale: Locale,
   settings?: AgentSettings | null,
 ): AgentProfile {
-  const configuredGreeting =
-    settings?.greeting[locale] ?? defaultGreetings[locale];
-  const greeting =
-    locale === 'ar-SA'
-      ? normalizeSaudiArabicGreeting(configuredGreeting)
-      : configuredGreeting;
+  const greeting = settings?.greeting[locale] ?? defaultGreetings[locale];
   const customInstructions = settings?.instructionTemplate.trim();
 
   const pricingPolicy = {
@@ -381,10 +373,10 @@ export function buildAgentProfile(
     callerIntentPolicy(locale),
     serverSafetyPolicy[locale],
     languageContinuityPolicy[locale],
-    ...(locale === 'ar-SA' ? [SAUDI_ARABIC_SPEECH_GUIDE] : []),
     spokenTimePolicy[locale],
     cancellationPolicy[locale],
     directTutorCalendarPolicy[locale],
+    ...(locale === 'ar-SA' ? [SAUDI_ARABIC_SPEECH_GUIDE] : []),
   ].join('\n\n');
 
   return {

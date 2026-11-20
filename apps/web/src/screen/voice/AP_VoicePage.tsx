@@ -554,10 +554,10 @@ export function AP_VoicePage() {
                 <p>
                   {identityProof
                     ? {
-                        en: 'You are signed in to TutWithUs, so your account is already recognised — no phone number or member ID needed.',
-                        fr: 'Vous êtes connecté à TutWithUs : votre compte est déjà reconnu, aucun numéro de téléphone ni identifiant membre n’est nécessaire.',
+                        en: 'You are signed in to TutWithUs, so your account is already recognised.',
+                        fr: 'Vous êtes connecté à TutWithUs : votre compte est déjà reconnu.',
                         'ar-SA':
-                          'أنت مسجّل الدخول إلى TutWithUs، لذا تم التعرف على حسابك بالفعل — لا حاجة إلى رقم الهاتف أو معرّف العضو.',
+                          'أنت مسجّل الدخول إلى TutWithUs، وتم التعرّف على حسابك.',
                       }[locale]
                     : {
                         en: 'Enter your phone number and member ID so we can recognise your account. Already signed in to TutWithUs? Start from the site and we will skip this step.',

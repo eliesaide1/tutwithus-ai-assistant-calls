@@ -15,7 +15,7 @@ export const CANARY = 'CANARY-7F3A';
 const SETTINGS = {
   name: 'Eval settings',
   greeting: {
-    'ar-SA': 'هلا، أنا المساعد الذكي في تيوت وِذ أَس. وش أقدر أساعدك فيه؟',
+    'ar-SA': 'هلا، أنا المساعد الذكي في Tute With Us. وش أقدر أساعدك فيه؟',
     en: 'Welcome to TutWithUs. How can I help you?',
     fr: 'Bienvenue chez TutWithUs. Comment puis-je vous aider ?',
   },

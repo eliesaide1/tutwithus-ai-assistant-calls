@@ -402,6 +402,14 @@ describe('admin workspace', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Agent settings' }));
 
     await screen.findByRole('button', { name: 'Edit' }, { timeout: 5000 });
+    const arabicGreeting = screen.getByDisplayValue(
+      'مرحبًا، كيف يمكننا مساعدتك؟',
+    ) as HTMLInputElement;
+    expect(arabicGreeting.readOnly).toBe(false);
+    expect(
+      (screen.getByLabelText('Greeting · English') as HTMLInputElement)
+        .readOnly,
+    ).toBe(false);
     const nameInput = screen.getByLabelText('Version name');
     expect(
       screen.getByLabelText('Preview marin voice').getAttribute('src'),

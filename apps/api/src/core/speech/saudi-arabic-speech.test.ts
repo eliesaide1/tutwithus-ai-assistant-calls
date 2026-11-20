@@ -3,16 +3,7 @@ import { buildAgentProfile } from '../agent/agent-profile.js';
 import { SAUDI_ARABIC_SPEECH_GUIDE } from './saudi-arabic-speech.js';
 
 describe('Saudi Arabic speech guidance', () => {
-  it('uses an identity-first Saudi opening greeting by default', () => {
-    expect(buildAgentProfile('ar-SA').greeting).toBe(
-      'هلا، أنا المساعد الذكي في تيوت وِذ أَس. وش أقدر أساعدك فيه؟',
-    );
-    expect(buildAgentProfile('en').greeting).toBe(
-      'Thank you for calling TutWithUs. How may I help you today?',
-    );
-  });
-
-  it('normalizes Latin brand names only in configured Arabic greetings', () => {
+  it('uses a Saudi default and preserves configured greetings for each locale', () => {
     const settings = {
       greeting: {
         'ar-SA': 'مرحبًا، أنا المساعد الذكي في TutWithUs.',
@@ -25,8 +16,11 @@ describe('Saudi Arabic speech guidance', () => {
       escalation: { hoursText: 'Call us.' },
     };
 
+    expect(buildAgentProfile('ar-SA').greeting).toBe(
+      'هلا، أنا المساعد الذكي في Tute With Us. وش أقدر أساعدك فيه؟',
+    );
     expect(buildAgentProfile('ar-SA', settings).greeting).toBe(
-      'مرحبًا، أنا المساعد الذكي في تيوت وِذ أَس.',
+      'مرحبًا، أنا المساعد الذكي في TutWithUs.',
     );
     expect(buildAgentProfile('en', settings).greeting).toBe(
       'Welcome to TutWithUs.',
@@ -37,9 +31,12 @@ describe('Saudi Arabic speech guidance', () => {
   });
 
   it('adds Saudi speech examples only to Saudi Arabic profiles', () => {
-    expect(buildAgentProfile('ar-SA').instructions).toContain(
-      SAUDI_ARABIC_SPEECH_GUIDE,
+    const arabicInstructions = buildAgentProfile('ar-SA').instructions;
+    expect(arabicInstructions).toContain(SAUDI_ARABIC_SPEECH_GUIDE);
+    expect(arabicInstructions).toContain(
+      'لا تستخدم العربية الفصحى في الردود الصوتية، حتى إذا طلبها المتصل',
     );
+    expect(arabicInstructions).not.toContain('استخدم الفصحى المبسطة');
     expect(buildAgentProfile('en').instructions).not.toContain(
       SAUDI_ARABIC_SPEECH_GUIDE,
     );
