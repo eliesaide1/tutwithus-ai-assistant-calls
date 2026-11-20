@@ -17,6 +17,12 @@ type AP_ConsentStepProps = {
   onPhoneChange: (phone: string) => void;
   memberId: string;
   onMemberIdChange: (memberId: string) => void;
+  /**
+   * The signed-in portal already proved who the caller is, so asking for the
+   * phone and member id again would be asking for something we hold. Consent
+   * is still collected: it is a separate decision from identification.
+   */
+  identityVerified?: boolean;
 };
 
 export function AP_ConsentStep({
@@ -35,10 +41,12 @@ export function AP_ConsentStep({
   onPhoneChange,
   memberId,
   onMemberIdChange,
+  identityVerified = false,
 }: AP_ConsentStepProps) {
   const hasPhone = Boolean(phone.trim());
   const hasMemberId = Boolean(memberId.trim());
-  const credentialsComplete = hasPhone === hasMemberId;
+  // Either both credentials or neither; a verified caller supplies neither.
+  const credentialsComplete = identityVerified || hasPhone === hasMemberId;
   return (
     <section
       aria-labelledby="ap-consent-step-heading"
@@ -59,27 +67,31 @@ export function AP_ConsentStep({
           }
         }}
       >
-        <AP_FormField label={phoneLabel}>
-          <input
-            autoComplete="tel"
-            inputMode="tel"
-            maxLength={24}
-            minLength={8}
-            onChange={(event) => onPhoneChange(event.target.value)}
-            pattern="(?=.*\d)\+?(?:[\d\s]|\(|\)|\.|-)+"
-            type="tel"
-            value={phone}
-          />
-        </AP_FormField>
-        <AP_FormField label={memberIdLabel}>
-          <input
-            autoComplete="off"
-            maxLength={128}
-            onChange={(event) => onMemberIdChange(event.target.value)}
-            type="text"
-            value={memberId}
-          />
-        </AP_FormField>
+        {!identityVerified && (
+          <>
+            <AP_FormField label={phoneLabel}>
+              <input
+                autoComplete="tel"
+                inputMode="tel"
+                maxLength={24}
+                minLength={8}
+                onChange={(event) => onPhoneChange(event.target.value)}
+                pattern="(?=.*\d)\+?(?:[\d\s]|\(|\)|\.|-)+"
+                type="tel"
+                value={phone}
+              />
+            </AP_FormField>
+            <AP_FormField label={memberIdLabel}>
+              <input
+                autoComplete="off"
+                maxLength={128}
+                onChange={(event) => onMemberIdChange(event.target.value)}
+                type="text"
+                value={memberId}
+              />
+            </AP_FormField>
+          </>
+        )}
         <label className="ap-consent-step__choice">
           <input
             checked={acknowledged}

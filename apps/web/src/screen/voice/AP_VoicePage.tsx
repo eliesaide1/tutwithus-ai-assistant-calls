@@ -592,14 +592,19 @@ export function AP_VoicePage() {
             ) : callStatus ? null : (
               <>
                 <p>
-                  {
-                    {
-                      en: 'Enter both your phone number and member ID for account services, or leave both empty for public TutWithUs information only.',
-                      fr: 'Saisissez votre numéro de téléphone et votre identifiant membre pour les services du compte, ou laissez les deux champs vides pour accéder uniquement aux informations publiques TutWithUs.',
-                      'ar-SA':
-                        'أدخل رقم الهاتف ومعرّف العضو معًا لخدمات الحساب، أو اترك الحقلين فارغين للحصول على معلومات TutWithUs العامة فقط.',
-                    }[locale]
-                  }
+                  {identityProof
+                    ? {
+                        en: 'You are signed in to TutWithUs, so your account is already recognised — no phone number or member ID needed.',
+                        fr: 'Vous êtes connecté à TutWithUs : votre compte est déjà reconnu, aucun numéro de téléphone ni identifiant membre n’est nécessaire.',
+                        'ar-SA':
+                          'أنت مسجّل الدخول إلى TutWithUs، لذا تم التعرف على حسابك بالفعل — لا حاجة إلى رقم الهاتف أو معرّف العضو.',
+                      }[locale]
+                    : {
+                        en: 'Enter both your phone number and member ID for account services, or leave both empty for public TutWithUs information only.',
+                        fr: 'Saisissez votre numéro de téléphone et votre identifiant membre pour les services du compte, ou laissez les deux champs vides pour accéder uniquement aux informations publiques TutWithUs.',
+                        'ar-SA':
+                          'أدخل رقم الهاتف ومعرّف العضو معًا لخدمات الحساب، أو اترك الحقلين فارغين للحصول على معلومات TutWithUs العامة فقط.',
+                      }[locale]}
                 </p>
                 <AP_ConsentStep
                   acknowledgeLabel={text.acknowledgeConsent}
@@ -616,6 +621,7 @@ export function AP_VoicePage() {
                   onStart={handleStart}
                   onPhoneChange={setPhone}
                   onMemberIdChange={setMemberId}
+                  identityVerified={Boolean(identityProof)}
                   startLabel={text.startWithConsent}
                 />
               </>
