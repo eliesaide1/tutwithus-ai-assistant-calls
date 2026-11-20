@@ -45,8 +45,9 @@ export function AP_ConsentStep({
 }: AP_ConsentStepProps) {
   const hasPhone = Boolean(phone.trim());
   const hasMemberId = Boolean(memberId.trim());
-  // Either both credentials or neither; a verified caller supplies neither.
-  const credentialsComplete = identityVerified || hasPhone === hasMemberId;
+  // A caller the portal has already identified supplies neither; everyone
+  // else supplies both, since one without the other proves nothing.
+  const credentialsComplete = identityVerified || (hasPhone && hasMemberId);
   return (
     <section
       aria-labelledby="ap-consent-step-heading"
@@ -77,6 +78,7 @@ export function AP_ConsentStep({
                 minLength={8}
                 onChange={(event) => onPhoneChange(event.target.value)}
                 pattern="(?=.*\d)\+?(?:[\d\s]|\(|\)|\.|-)+"
+                required
                 type="tel"
                 value={phone}
               />
@@ -86,6 +88,7 @@ export function AP_ConsentStep({
                 autoComplete="off"
                 maxLength={128}
                 onChange={(event) => onMemberIdChange(event.target.value)}
+                required
                 type="text"
                 value={memberId}
               />

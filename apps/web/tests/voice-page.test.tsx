@@ -393,6 +393,12 @@ describe('voice page call flow', () => {
         name: /I understand this is an AI assistant/i,
       }),
     );
+    fireEvent.change(screen.getByLabelText(/Phone number/i), {
+      target: { value: '+966501234567' },
+    });
+    fireEvent.change(screen.getByLabelText(/member ID/i), {
+      target: { value: '2610037' },
+    });
     fireEvent.click(screen.getByRole('button', { name: 'Start talking' }));
 
     expect((await screen.findByRole('alert')).textContent).toContain(
@@ -411,6 +417,12 @@ describe('voice page call flow', () => {
         name: /I understand this is an AI assistant/i,
       }),
     );
+    fireEvent.change(screen.getByLabelText(/Phone number/i), {
+      target: { value: '+966501234567' },
+    });
+    fireEvent.change(screen.getByLabelText(/member ID/i), {
+      target: { value: '2610037' },
+    });
     fireEvent.click(screen.getByRole('button', { name: 'Start talking' }));
     await screen.findByRole('button', { name: 'End call' });
 
@@ -448,6 +460,12 @@ describe('voice page call flow', () => {
         name: /I understand this is an AI assistant/i,
       }),
     );
+    fireEvent.change(screen.getByLabelText(/Phone number/i), {
+      target: { value: '+966501234567' },
+    });
+    fireEvent.change(screen.getByLabelText(/member ID/i), {
+      target: { value: '2610037' },
+    });
     fireEvent.click(screen.getByRole('button', { name: 'Start talking' }));
     fireEvent.click(await screen.findByRole('button', { name: 'End call' }));
 
@@ -475,6 +493,12 @@ describe('voice page call flow', () => {
         name: /I understand this is an AI assistant/i,
       }),
     );
+    fireEvent.change(screen.getByLabelText(/Phone number/i), {
+      target: { value: '+966501234567' },
+    });
+    fireEvent.change(screen.getByLabelText(/member ID/i), {
+      target: { value: '2610037' },
+    });
     fireEvent.click(screen.getByRole('button', { name: 'Start talking' }));
     await screen.findByRole('button', { name: 'End call' });
 
@@ -485,6 +509,11 @@ describe('voice page call flow', () => {
       expect(endVoiceSession).toHaveBeenCalledWith(firstSession, 'user_ended'),
     );
 
+    // The member id is discarded once verified, so a second call needs it
+    // entered again; the phone number is still held.
+    fireEvent.change(screen.getByLabelText(/member ID/i), {
+      target: { value: '2610037' },
+    });
     fireEvent.click(
       await screen.findByRole('button', { name: 'Start talking' }),
     );

@@ -252,8 +252,8 @@
   "transcriptSaveError": "تعذّر حفظ جزء من نص المحادثة. تقدر تكمّل المكالمة.",
   "voiceServiceUnavailable": "خدمة الصوت غير متاحة حاليًا. تم إيقاف الميكروفون. حاول لاحقًا.",
   "sessionEndError": "تم إيقاف الميكروفون، لكن تعذّر إبلاغ الخدمة بانتهاء المكالمة.",
-  "accountCheckPhoneLabel": "رقم الهاتف مع رمز الدولة (اختياري)",
-  "accountCheckMemberIdLabel": "معرّف عضو TutWithUs (اختياري)",
+  "accountCheckPhoneLabel": "رقم الهاتف مع رمز الدولة",
+  "accountCheckMemberIdLabel": "معرّف عضو TutWithUs",
   "accountCredentialsPairError": "أدخل رقم الهاتف ومعرّف العضو معًا، أو اترك الحقلين فارغين للمعلومات العامة فقط.",
   "accountCredentialsInvalid": "رقم الهاتف ومعرّف العضو غير متطابقين. تحقق منهما وحاول مرة أخرى.",
   "accountVerificationUnavailable": "التحقق من الحساب غير متاح الآن. حاول مرة أخرى لاحقًا."

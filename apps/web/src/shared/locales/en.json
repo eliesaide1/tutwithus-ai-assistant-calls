@@ -252,8 +252,8 @@
   "transcriptSaveError": "Some conversation text could not be saved. You can continue talking.",
   "voiceServiceUnavailable": "The voice service is unavailable right now. Your microphone has been stopped. Please try again later.",
   "sessionEndError": "Your microphone was stopped, but we couldn’t notify the service that the call ended.",
-  "accountCheckPhoneLabel": "Phone number with country code (optional)",
-  "accountCheckMemberIdLabel": "TutWithUs member ID (optional)",
+  "accountCheckPhoneLabel": "Phone number with country code",
+  "accountCheckMemberIdLabel": "TutWithUs member ID",
   "accountCredentialsPairError": "Enter both your phone number and member ID, or leave both empty for public information only.",
   "accountCredentialsInvalid": "The phone number and member ID did not match. Check both fields and try again.",
   "accountVerificationUnavailable": "Account verification is unavailable right now. Please try again later."

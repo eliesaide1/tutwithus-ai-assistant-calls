@@ -252,8 +252,8 @@
   "transcriptSaveError": "Une partie de la conversation n’a pas pu être enregistrée en texte. Vous pouvez continuer à parler.",
   "voiceServiceUnavailable": "Le service vocal est indisponible. Le microphone a été arrêté. Réessayez plus tard.",
   "sessionEndError": "Le microphone a été arrêté, mais le service n’a pas pu être informé de la fin de l’appel.",
-  "accountCheckPhoneLabel": "Numéro de téléphone avec indicatif pays (facultatif)",
-  "accountCheckMemberIdLabel": "Identifiant membre TutWithUs (facultatif)",
+  "accountCheckPhoneLabel": "Numéro de téléphone avec indicatif pays",
+  "accountCheckMemberIdLabel": "Identifiant membre TutWithUs",
   "accountCredentialsPairError": "Saisissez votre numéro de téléphone et votre identifiant membre, ou laissez les deux champs vides pour accéder uniquement aux informations publiques.",
   "accountCredentialsInvalid": "Le numéro de téléphone et l’identifiant membre ne correspondent pas. Vérifiez les deux champs et réessayez.",
   "accountVerificationUnavailable": "La vérification du compte est indisponible pour le moment. Réessayez plus tard."

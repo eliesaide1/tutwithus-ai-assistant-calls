@@ -612,10 +612,10 @@ export function AP_VoicePage() {
                           'أنت مسجّل الدخول إلى TutWithUs، لذا تم التعرف على حسابك بالفعل — لا حاجة إلى رقم الهاتف أو معرّف العضو.',
                       }[locale]
                     : {
-                        en: 'Enter both your phone number and member ID for account services, or leave both empty for public TutWithUs information only.',
-                        fr: 'Saisissez votre numéro de téléphone et votre identifiant membre pour les services du compte, ou laissez les deux champs vides pour accéder uniquement aux informations publiques TutWithUs.',
+                        en: 'Enter your phone number and member ID so we can recognise your account. Already signed in to TutWithUs? Start from the site and we will skip this step.',
+                        fr: 'Saisissez votre numéro de téléphone et votre identifiant membre afin que nous puissions reconnaître votre compte. Déjà connecté à TutWithUs ? Lancez l’assistant depuis le site et cette étape sera ignorée.',
                         'ar-SA':
-                          'أدخل رقم الهاتف ومعرّف العضو معًا لخدمات الحساب، أو اترك الحقلين فارغين للحصول على معلومات TutWithUs العامة فقط.',
+                          'أدخل رقم هاتفك ومعرّف العضو حتى نتمكن من التعرف على حسابك. هل سجّلت الدخول إلى TutWithUs بالفعل؟ ابدأ من الموقع وسنتخطى هذه الخطوة.',
                       }[locale]}
                 </p>
                 <AP_ConsentStep
