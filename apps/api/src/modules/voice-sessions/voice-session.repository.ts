@@ -330,8 +330,9 @@ export class MongoVoiceSessionRepository implements VoiceSessionRepository {
       sessionId,
       ...buildAdminConversationMatch(),
     })
+      // callbackPhone is select:false on the model, so it must be asked for.
       .select(
-        'sessionId locale startedAt endedAt flags channel customerPhone transcript',
+        'sessionId locale startedAt endedAt flags channel customerPhone transcript +callbackPhone',
       )
       .lean()
       .exec();
@@ -349,6 +350,7 @@ export class MongoVoiceSessionRepository implements VoiceSessionRepository {
       ...(record.flags?.length ? { flags: record.flags } : {}),
       channel: record.channel ?? 'browser',
       ...(record.customerPhone ? { customerPhone: record.customerPhone } : {}),
+      ...(record.callbackPhone ? { callerPhone: record.callbackPhone } : {}),
       transcriptCount: record.transcript.length,
       transcript: record.transcript.map((entry) => ({
         speaker: entry.speaker,

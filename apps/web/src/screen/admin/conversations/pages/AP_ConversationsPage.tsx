@@ -210,7 +210,10 @@ export function AP_ConversationsPage({
                   </span>
                   <span className="ap-admin-conversation-detail__identity">
                     <strong>
-                      {selectedConversation.customerPhone ??
+                      {/* The full number is served for the detail view only;
+                          the list beside it stays masked. */}
+                      {selectedConversation.callerPhone ??
+                        selectedConversation.customerPhone ??
                         text.adminConversationUnknownCustomer}
                     </strong>
                     <small>

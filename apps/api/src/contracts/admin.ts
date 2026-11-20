@@ -237,6 +237,10 @@ export const AdminConversationSummarySchema = z.object({
 });
 
 export const AdminConversationSchema = AdminConversationSummarySchema.extend({
+  // The full caller number, on the detail view only. The list keeps the masked
+  // customerPhone: browsing a hundred conversations never needs it, and
+  // opening one is a deliberate act that the audit log records.
+  callerPhone: z.string().optional(),
   transcript: z.array(
     z.object({
       speaker: z.enum(['user', 'assistant']),
