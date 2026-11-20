@@ -85,3 +85,42 @@ it('preserves the exact returned name for one selected tutor', async () => {
     },
   });
 });
+
+it('prepares exact, natural Saudi Arabic availability wording', async () => {
+  const tool = createCheckTutorCalendarTool(async () => ({
+    status: 'available',
+    slots: [
+      { date: '2026-11-29', timeFrom: '11:30', timeTo: '12:00' },
+      { date: '2026-11-29', timeFrom: '12:00', timeTo: '13:00' },
+    ],
+  }));
+
+  expect(
+    await tool.invoke(
+      { tutorId: 'elie-id', tutorName: 'Elie Saide' },
+      { ...context, locale: 'ar-SA' },
+    ),
+  ).toMatchObject({
+    kind: 'ok',
+    outcome: {
+      output: {
+        tutorName: 'Elie Saide',
+        date: '2026-11-29',
+        spokenDate: 'الأحد، ٢٩ نوفمبر',
+        slots: [
+          {
+            spokenTime: 'من الساعة ١١ ونص الصباح إلى الساعة ١٢ الظهر',
+          },
+          {
+            spokenTime: 'من الساعة ١٢ الظهر إلى الساعة ١ الظهر',
+          },
+        ],
+        spokenSummary:
+          'المواعيد المتاحة مع Elie Saide يوم الأحد، ٢٩ نوفمبر: من الساعة ١١ ونص الصباح إلى الساعة ١٢ الظهر، من الساعة ١٢ الظهر إلى الساعة ١ الظهر.',
+      },
+      followUpInstructions: expect.stringContaining(
+        'Say the returned spokenSummary exactly once',
+      ),
+    },
+  });
+});

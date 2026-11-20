@@ -1740,12 +1740,45 @@ export function createCheckTutorCalendarTool(
           (slot) => slot.date === nearestDate,
         );
         const visibleSlots = nearestDateSlots.slice(0, 4);
+        const laterDatesAvailable = ordered.some(
+          (slot) => slot.date !== nearestDate,
+        );
         const spokenPeriod = (time: string) => {
           const [hourText, minute = '00'] = time.split(':');
           const hour = Number(hourText);
           if (context.locale === 'fr')
             return `${hour} h${minute === '00' ? '' : ` ${minute}`}`;
-          if (context.locale === 'ar-SA') return `${hour}:${minute}`;
+          if (context.locale === 'ar-SA') {
+            const arabicDigits = (value: string) =>
+              value.replace(
+                /\d/g,
+                (digit) => '٠١٢٣٤٥٦٧٨٩'[Number(digit)] ?? digit,
+              );
+            const spokenHour = hour % 12 || 12;
+            const spokenMinute =
+              minute === '00'
+                ? ''
+                : minute === '30'
+                  ? ' ونص'
+                  : minute === '15'
+                    ? ' وربع'
+                    : ` و${arabicDigits(String(Number(minute)))} دقيقة`;
+            const dayPart =
+              hour === 0
+                ? 'بعد منتصف الليل'
+                : hour < 5
+                  ? 'بالليل'
+                  : hour < 12
+                    ? 'الصباح'
+                    : hour < 15
+                      ? 'الظهر'
+                      : hour < 18
+                        ? 'العصر'
+                        : hour === 18
+                          ? 'المغرب'
+                          : 'المساء';
+            return `الساعة ${arabicDigits(String(spokenHour))}${spokenMinute} ${dayPart}`;
+          }
           if (hour === 0)
             return minute === '00' ? 'midnight' : `12:${minute} A.M.`;
           if (hour === 12)
@@ -1753,25 +1786,53 @@ export function createCheckTutorCalendarTool(
           const spokenHour = hour > 12 ? hour - 12 : hour;
           return `${spokenHour}${minute === '00' ? '' : `:${minute}`} ${hour < 12 ? 'A.M.' : 'P.M.'}`;
         };
+        const tutorName = selected?.tutor.tutorName ?? args.tutorName;
+        const spokenDate =
+          context.locale === 'ar-SA'
+            ? new Intl.DateTimeFormat('ar-SA-u-ca-gregory-nu-arab', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+                timeZone: 'UTC',
+              }).format(new Date(`${nearestDate}T12:00:00.000Z`))
+            : undefined;
+        const spokenTimes = visibleSlots.map(
+          (slot) =>
+            `من ${spokenPeriod(slot.timeFrom)} إلى ${spokenPeriod(slot.timeTo)}`,
+        );
+        const moreTimesPrompt =
+          nearestDateSlots.length > visibleSlots.length && laterDatesAvailable
+            ? 'وفيه مواعيد ثانية بنفس اليوم وبتواريخ لاحقة، إذا ودك أذكرها لك.'
+            : nearestDateSlots.length > visibleSlots.length
+              ? 'وفيه مواعيد ثانية بنفس اليوم، إذا ودك أذكرها لك.'
+              : 'وفيه مواعيد بتواريخ ثانية، إذا ودك أذكرها لك.';
         return {
           output: {
             status: 'available',
-            ...(selected?.tutor.tutorName || args.tutorName
-              ? { tutorName: selected?.tutor.tutorName ?? args.tutorName }
-              : {}),
+            ...(tutorName ? { tutorName } : {}),
             date: nearestDate,
             slots: visibleSlots.map((slot) => ({
               ...slot,
-              spokenTime: `${spokenPeriod(slot.timeFrom)} to ${spokenPeriod(slot.timeTo)}`,
+              spokenTime: `${context.locale === 'ar-SA' ? 'من ' : ''}${spokenPeriod(slot.timeFrom)}${context.locale === 'ar-SA' ? ' إلى ' : ' to '}${spokenPeriod(slot.timeTo)}`,
             })),
+            ...(spokenDate
+              ? {
+                  spokenDate,
+                  spokenSummary: `${tutorName ? `المواعيد المتاحة مع ${tutorName}` : 'المواعيد المتاحة'} يوم ${spokenDate}: ${spokenTimes.join('، ')}.`,
+                  ...(nearestDateSlots.length > visibleSlots.length ||
+                  laterDatesAvailable
+                    ? { moreTimesPrompt }
+                    : {}),
+                }
+              : {}),
             timeZone,
             moreSlotsOnDate: nearestDateSlots.length > visibleSlots.length,
-            laterDatesAvailable: ordered.some(
-              (slot) => slot.date !== nearestDate,
-            ),
+            laterDatesAvailable,
           },
           followUpInstructions:
-            'State tutorName when returned; otherwise use the single tutor name already established. State the single returned date and each returned spokenTime exactly as written. Keep the result to at most two short sentences. If moreSlotsOnDate or laterDatesAvailable is true, ask only whether the caller wants more times. Do not read raw 24-hour values, calculate time conversions, self-correct aloud, ask for a course, mention eligibility, recommend a bundle, claim a booking, or read any tutor id.',
+            context.locale === 'ar-SA'
+              ? 'Say the returned spokenSummary exactly once. If moreSlotsOnDate or laterDatesAvailable is true, add the returned moreTimesPrompt exactly once. Do not separately say tutorName, spokenDate, the raw date, raw HH:mm values, tutor titles, or gendered pronouns. Do not add a greeting, filler, another offer, or a booking claim.'
+              : 'State tutorName when returned; otherwise use the single tutor name already established. State the single returned date and each returned spokenTime exactly as written. Keep the result to at most two short sentences. If moreSlotsOnDate or laterDatesAvailable is true, ask only whether the caller wants more times. Do not read raw 24-hour values, calculate time conversions, self-correct aloud, ask for a course, mention eligibility, recommend a bundle, claim a booking, or read any tutor id.',
         };
       }
       return {

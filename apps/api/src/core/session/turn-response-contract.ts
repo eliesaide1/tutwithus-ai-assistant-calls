@@ -1,4 +1,5 @@
 import { forcedToolForRoute, type TurnRoute } from './turn-router.js';
+import type { ToolContext } from '../tools/tool-registry.js';
 
 export type TurnResponseContract = {
   instructions: string[];
@@ -10,6 +11,7 @@ export function turnResponseContract(input: {
   route: TurnRoute;
   subjectName?: string;
   tutorProfiles: Array<{ id: string; fullName: string }>;
+  locale: ToolContext['locale'];
 }): TurnResponseContract {
   const { route } = input;
   const forcedTool = forcedToolForRoute(route);
@@ -27,7 +29,7 @@ export function turnResponseContract(input: {
       break;
     case 'check_tutor_calendar':
       instructions.push(
-        `First say one short waiting sentence tied to the requested tutor, then immediately call check_tutor_calendar once. Resolve names and ordinal references only against this server-preserved list: ${JSON.stringify(input.tutorProfiles)}. For one tutor, pass that exact id and fullName. For any tutor, one of them, nearest, earliest, or first available, pass every preserved tutor so the server compares the calendars. Never invent an id or mention verification.`,
+        `${input.locale === 'ar-SA' ? 'Say exactly one short Saudi Arabic waiting sentence: «أكيد، أشيك لك على المواعيد المتاحة الحين.» Then immediately call check_tutor_calendar once. Do not add filler or use a gendered title for the tutor.' : 'First say one short waiting sentence tied to the requested tutor, then immediately call check_tutor_calendar once.'} Resolve names and ordinal references only against this server-preserved list: ${JSON.stringify(input.tutorProfiles)}. For one tutor, pass that exact id and fullName. For any tutor, one of them, nearest, earliest, or first available, pass every preserved tutor so the server compares the calendars. Never invent an id or mention verification.`,
       );
       break;
     case 'search_tutor_profiles':

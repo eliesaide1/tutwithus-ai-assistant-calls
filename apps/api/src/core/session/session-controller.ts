@@ -134,7 +134,9 @@ function requestsTutorCalendar(value: string): boolean {
       normalized,
     ) ||
     /\b(disponibilit[ée]s?|calendrier|créneaux?)\b/u.test(normalized) ||
-    /(?:توفر|توافر|مواعيد|جدول)/u.test(normalized);
+    /(?:توفر|توافر|مواعيد|مواقيت|المواعيد|المواقيت|جدول|توقيت|التوقيت|وقت|الوقت|أوقات|اوقات|الأوقات)/u.test(
+      normalized,
+    );
   const explicitlyNamesCourse =
     /\b(course|class|lesson|subject)\b/u.test(normalized) ||
     /\b(cours|classe|leçon|matière)\b/u.test(normalized) ||
@@ -1376,6 +1378,7 @@ export class SessionController {
           route.kind === 'recommend_course_bundle' && route.anyLevel;
         const routeContract = turnResponseContract({
           route,
+          locale: this.deps.toolContext.locale,
           ...(this.conversation.subjectName
             ? { subjectName: this.conversation.subjectName }
             : {}),
@@ -1421,7 +1424,9 @@ export class SessionController {
                 : []),
               ...(forceTutorCalendarLookup
                 ? [
-                    `The caller is already server-verified. First say exactly one short, friendly waiting sentence tied to the requested tutor, such as â€œIâ€™ll check Zeina Al Ahmadiehâ€™s live availability now.â€ Then immediately output exactly one check_tutor_calendar function call in the same response. The server-preserved tutor list is ${JSON.stringify(this.conversation.tutors)}. Resolve approximate spoken names and ordinal references only against this list. For one tutor, pass that exact id and fullName as tutorId and tutorName. If the caller says any of them, any tutor, nearest, earliest, or first available, pass every entry as tutors so the tool compares their calendars. Do not add a second waiting sentence, generic filler, verification language, a course, subject, level, wallet, or eligibility. Never invent an id.`,
+                    this.deps.toolContext.locale === 'ar-SA'
+                      ? `The caller is already server-verified. Say exactly one short Saudi Arabic waiting sentence: «أكيد، أشيك لك على المواعيد المتاحة الحين.» Then immediately output exactly one check_tutor_calendar function call in the same response. The server-preserved tutor list is ${JSON.stringify(this.conversation.tutors)}. Resolve approximate spoken names and ordinal references only against this list. For one tutor, pass that exact id and fullName as tutorId and tutorName. If the caller says any of them, any tutor, nearest, earliest, or first available, pass every entry as tutors so the tool compares their calendars. Do not add another sentence, generic filler, a gendered title, verification language, a course, subject, level, wallet, or eligibility. Never invent an id.`
+                      : `The caller is already server-verified. First say exactly one short, friendly waiting sentence tied to the requested tutor, such as “I’ll check Zeina Al Ahmadieh’s live availability now.” Then immediately output exactly one check_tutor_calendar function call in the same response. The server-preserved tutor list is ${JSON.stringify(this.conversation.tutors)}. Resolve approximate spoken names and ordinal references only against this list. For one tutor, pass that exact id and fullName as tutorId and tutorName. If the caller says any of them, any tutor, nearest, earliest, or first available, pass every entry as tutors so the tool compares their calendars. Do not add a second waiting sentence, generic filler, verification language, a course, subject, level, wallet, or eligibility. Never invent an id.`,
                   ]
                 : []),
               ...(forceTutorProfileLookup

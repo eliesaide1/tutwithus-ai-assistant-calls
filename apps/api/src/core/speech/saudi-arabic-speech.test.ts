@@ -51,6 +51,10 @@ describe('Saudi Arabic speech guidance', () => {
     expect(SAUDI_ARABIC_SPEECH_GUIDE).toContain('Elie Saide');
     expect(SAUDI_ARABIC_SPEECH_GUIDE).toContain('اذكر ما أعادته الأداة فقط');
     expect(SAUDI_ARABIC_SPEECH_GUIDE).toContain(
+      'استخدم spokenSummary المعاد من check_tutor_calendar كما هو',
+    );
+    expect(SAUDI_ARABIC_SPEECH_GUIDE).toContain('لا تستنتج جنس المعلم من اسمه');
+    expect(SAUDI_ARABIC_SPEECH_GUIDE).toContain(
       'أمثلة الصياغة أدناه للأسلوب فقط',
     );
   });

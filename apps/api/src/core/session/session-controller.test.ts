@@ -1091,6 +1091,44 @@ describe('tool calls', () => {
     );
   });
 
+  it('routes Saudi Arabic timing language to the tutor calendar', async () => {
+    const t = createHarness(undefined, true, 'student', 'ar-SA', [
+      createCheckTutorCalendarTool(async () => ({
+        status: 'available',
+        slots: [],
+      })),
+    ]);
+    await t.controller.notifyAccountCheck(
+      'verified',
+      'server-token',
+      'student',
+    );
+    await acknowledgeToolUpdate(t.controller, t.sent);
+    await t.controller.handleEvent({
+      type: 'response.created',
+      response: { id: 'verification-notice' },
+    });
+    await t.controller.handleEvent({
+      type: 'response.done',
+      response: { id: 'verification-notice' },
+    });
+    t.sent.length = 0;
+
+    await t.controller.handleEvent({
+      type: 'conversation.item.input_audio_transcription.completed',
+      item_id: 'calendar-request',
+      transcript: 'شو التوقيت المتاح إله؟',
+    });
+
+    const response = t.sent.find((event) => event.type === 'response.create');
+    expect(response?.response?.instructions).toContain(
+      'أكيد، أشيك لك على المواعيد المتاحة الحين.',
+    );
+    expect(response?.response?.instructions).toContain(
+      'immediately output exactly one check_tutor_calendar function call',
+    );
+  });
+
   it('reapplies catalog and direct-booking routing on later caller turns', async () => {
     const t = createHarness(undefined, true);
 
