@@ -29,7 +29,7 @@ export function turnResponseContract(input: {
       break;
     case 'check_tutor_calendar':
       instructions.push(
-        `${input.locale === 'ar-SA' ? 'Say exactly one short Saudi Arabic waiting sentence: «أكيد، أشيك لك على المواعيد المتاحة الحين.» Then immediately call check_tutor_calendar once. Do not add filler or use a gendered title for the tutor.' : 'First say one short waiting sentence tied to the requested tutor, then immediately call check_tutor_calendar once.'} Resolve names and ordinal references only against this server-preserved list: ${JSON.stringify(input.tutorProfiles)}. For one tutor, pass that exact id and fullName. For any tutor, one of them, nearest, earliest, or first available, pass every preserved tutor so the server compares the calendars. Never invent an id or mention verification.`,
+        `Output exactly one check_tutor_calendar function call with no text or audio before it. Resolve names and ordinal references only against this server-preserved list: ${JSON.stringify(input.tutorProfiles)}. For one tutor, pass that exact id and fullName. For any tutor, one of them, nearest, earliest, or first available, pass every preserved tutor so the server compares the calendars. Never invent an id or mention verification.`,
       );
       break;
     case 'search_tutor_profiles':

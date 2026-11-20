@@ -134,6 +134,7 @@ export function forcedToolForRoute(route: TurnRoute): string | undefined {
   switch (route.kind) {
     case 'request_member_id':
     case 'cancel_course':
+    case 'check_tutor_calendar':
     case 'search_tutor_profiles':
     case 'start_course_booking':
       return route.kind;

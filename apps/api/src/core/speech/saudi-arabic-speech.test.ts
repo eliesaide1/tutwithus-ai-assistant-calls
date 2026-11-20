@@ -51,11 +51,12 @@ describe('Saudi Arabic speech guidance', () => {
     expect(SAUDI_ARABIC_SPEECH_GUIDE).toContain('Elie Saide');
     expect(SAUDI_ARABIC_SPEECH_GUIDE).toContain('اذكر ما أعادته الأداة فقط');
     expect(SAUDI_ARABIC_SPEECH_GUIDE).toContain(
-      'استخدم spokenSummary المعاد من check_tutor_calendar كما هو',
+      'استخدم spokenSummary المعاد من check_tutor_calendar بوصفه المصدر الوحيد',
     );
     expect(SAUDI_ARABIC_SPEECH_GUIDE).toContain(
-      'لا تبطئ بشكل مبالغ فيه ولا تفصل المقاطع',
+      'لا تحوّل كلمات الأعداد إلى أرقام',
     );
+    expect(SAUDI_ARABIC_SPEECH_GUIDE).toContain('دون بطء أو تقطيع للمقاطع');
     expect(SAUDI_ARABIC_SPEECH_GUIDE).toContain('لا تكرر «أَس»');
     expect(SAUDI_ARABIC_SPEECH_GUIDE).toContain(
       'نتائج الأدوات المعادة مصادر معتمدة',

@@ -1809,15 +1809,15 @@ export function createCheckTutorCalendarTool(
           return `${spokenHour}${minute === '00' ? '' : `:${minute}`} ${hour < 12 ? 'A.M.' : 'P.M.'}`;
         };
         const tutorName = selected?.tutor.tutorName ?? args.tutorName;
-        const spokenDate =
-          context.locale === 'ar-SA'
-            ? new Intl.DateTimeFormat('ar-SA-u-ca-gregory-nu-arab', {
-                weekday: 'long',
-                day: 'numeric',
-                month: 'long',
-                timeZone: 'UTC',
-              }).format(new Date(`${nearestDate}T12:00:00.000Z`))
-            : undefined;
+        const spokenDate = new Intl.DateTimeFormat(
+          'ar-SA-u-ca-gregory-nu-arab',
+          {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            timeZone: 'UTC',
+          },
+        ).format(new Date(`${nearestDate}T12:00:00.000Z`));
         const spokenTimes = visibleSlots.map((slot, index) => {
           const label =
             index === 0
@@ -1835,32 +1835,38 @@ export function createCheckTutorCalendarTool(
             : nearestDateSlots.length > visibleSlots.length
               ? 'وفيه مواعيد ثانية بنفس اليوم، إذا ودك أذكرها لك.'
               : 'وفيه مواعيد بتواريخ ثانية، إذا ودك أذكرها لك.';
+        const moreSlotsOnDate = nearestDateSlots.length > visibleSlots.length;
+        const spokenSummary = `${tutorName ? `المواعيد المتاحة مع ${tutorName}` : 'المواعيد المتاحة'} يوم ${spokenDate}: ${spokenTimes.join('. ')}.`;
+        const output =
+          context.locale === 'ar-SA'
+            ? {
+                status: 'available' as const,
+                spokenSummary,
+                ...(moreSlotsOnDate || laterDatesAvailable
+                  ? { moreTimesPrompt }
+                  : {}),
+                moreSlotsOnDate,
+                laterDatesAvailable,
+              }
+            : {
+                status: 'available' as const,
+                ...(tutorName ? { tutorName } : {}),
+                date: nearestDate,
+                slots: visibleSlots.map((slot) => ({
+                  date: slot.date,
+                  timeFrom: slot.timeFrom,
+                  timeTo: slot.timeTo,
+                  spokenTime: `${spokenPeriod(slot.timeFrom)} to ${spokenPeriod(slot.timeTo)}`,
+                })),
+                timeZone,
+                moreSlotsOnDate,
+                laterDatesAvailable,
+              };
         return {
-          output: {
-            status: 'available',
-            ...(tutorName ? { tutorName } : {}),
-            date: nearestDate,
-            slots: visibleSlots.map((slot) => ({
-              ...slot,
-              spokenTime: `${context.locale === 'ar-SA' ? 'من ' : ''}${spokenPeriod(slot.timeFrom)}${context.locale === 'ar-SA' ? ' إلى ' : ' to '}${spokenPeriod(slot.timeTo)}`,
-            })),
-            ...(spokenDate
-              ? {
-                  spokenDate,
-                  spokenSummary: `${tutorName ? `المواعيد المتاحة مع ${tutorName}` : 'المواعيد المتاحة'} يوم ${spokenDate}: ${spokenTimes.join('. ')}.`,
-                  ...(nearestDateSlots.length > visibleSlots.length ||
-                  laterDatesAvailable
-                    ? { moreTimesPrompt }
-                    : {}),
-                }
-              : {}),
-            timeZone,
-            moreSlotsOnDate: nearestDateSlots.length > visibleSlots.length,
-            laterDatesAvailable,
-          },
+          output,
           followUpInstructions:
             context.locale === 'ar-SA'
-              ? 'Say the returned spokenSummary exactly once. If moreSlotsOnDate or laterDatesAvailable is true, add the returned moreTimesPrompt exactly once. Do not separately say tutorName, spokenDate, the raw date, raw HH:mm values, tutor titles, or gendered pronouns. Do not add a greeting, filler, another offer, or a booking claim.'
+              ? 'Speak only the returned spokenSummary verbatim; it is the sole source for the tutor name, date, and times. Do not convert, reorder, reinterpret, or restate its times. If moreSlotsOnDate or laterDatesAvailable is true, add the returned moreTimesPrompt exactly once. Do not add a greeting, filler, another offer, or a booking claim.'
               : 'State tutorName when returned; otherwise use the single tutor name already established. State the single returned date and each returned spokenTime exactly as written. Keep the result to at most two short sentences. If moreSlotsOnDate or laterDatesAvailable is true, ask only whether the caller wants more times. Do not read raw 24-hour values, calculate time conversions, self-correct aloud, ask for a course, mention eligibility, recommend a bundle, claim a booking, or read any tutor id.',
         };
       }

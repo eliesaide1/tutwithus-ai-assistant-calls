@@ -967,34 +967,41 @@ describe('tool calls', () => {
     expect(instructions).not.toContain('get_my_wallet before showing choices');
   });
 
-  it('forces tutor-directory lookups without a spoken preamble', async () => {
-    const tutorSearch = defineTool({
-      name: 'search_tutor_profiles',
-      description: 'Test tutor search.',
-      access: { kind: 'public' },
-      parameters: z.object({ subjectName: z.string() }).strict(),
-      maxCallsPerSession: 5,
-      async execute() {
-        return { output: { status: 'available', profiles: [] } };
-      },
-    });
-    const t = createHarness(undefined, false, 'student', 'en', [tutorSearch]);
+  it.each([
+    'What tutors teach math?',
+    'Who teaches backend and server development?',
+    'مين اللي بيعلم backend and server development؟',
+  ])(
+    'forces tutor-directory lookups without a spoken preamble: %s',
+    async (transcript) => {
+      const tutorSearch = defineTool({
+        name: 'search_tutor_profiles',
+        description: 'Test tutor search.',
+        access: { kind: 'public' },
+        parameters: z.object({ subjectName: z.string() }).strict(),
+        maxCallsPerSession: 5,
+        async execute() {
+          return { output: { status: 'available', profiles: [] } };
+        },
+      });
+      const t = createHarness(undefined, false, 'student', 'en', [tutorSearch]);
 
-    await t.controller.handleEvent({
-      type: 'conversation.item.input_audio_transcription.completed',
-      item_id: 'tutor-search',
-      transcript: 'What tutors teach math?',
-    });
+      await t.controller.handleEvent({
+        type: 'conversation.item.input_audio_transcription.completed',
+        item_id: 'tutor-search',
+        transcript,
+      });
 
-    const response = t.sent.find((event) => event.type === 'response.create');
-    expect(response?.response?.tool_choice).toEqual({
-      type: 'function',
-      name: 'search_tutor_profiles',
-    });
-    expect(response?.response?.instructions).toContain(
-      'FUNCTION-CALL-ONLY TURN: output exactly one search_tutor_profiles call',
-    );
-  });
+      const response = t.sent.find((event) => event.type === 'response.create');
+      expect(response?.response?.tool_choice).toEqual({
+        type: 'function',
+        name: 'search_tutor_profiles',
+      });
+      expect(response?.response?.instructions).toContain(
+        'FUNCTION-CALL-ONLY TURN: output exactly one search_tutor_profiles call',
+      );
+    },
+  );
 
   it('also forces an approximately transcribed available-tutor request', async () => {
     const tutorSearch = defineTool({
@@ -1075,14 +1082,12 @@ describe('tool calls', () => {
     });
 
     const response = t.sent.find((event) => event.type === 'response.create');
-    expect(response?.response?.tool_choice).toBe('auto');
-    expect(response?.response?.instructions).toContain(
-      'exactly one short, friendly waiting sentence',
-    );
-    expect(response?.response?.instructions).toContain(
-      'immediately output exactly one check_tutor_calendar function call',
-    );
-    expect(response?.response?.output_modalities).toBeUndefined();
+    expect(response?.response?.tool_choice).toEqual({
+      type: 'function',
+      name: 'check_tutor_calendar',
+    });
+    expect(response?.response?.instructions).toContain('FUNCTION-CALL-ONLY');
+    expect(response?.response?.output_modalities).toEqual(['text']);
     expect(response?.response?.instructions).toContain(
       'Authoritative server account state for this response: VERIFIED',
     );
@@ -1121,12 +1126,11 @@ describe('tool calls', () => {
     });
 
     const response = t.sent.find((event) => event.type === 'response.create');
-    expect(response?.response?.instructions).toContain(
-      'أكيد، أشيك لك على المواعيد المتاحة الحين.',
-    );
-    expect(response?.response?.instructions).toContain(
-      'immediately output exactly one check_tutor_calendar function call',
-    );
+    expect(response?.response?.tool_choice).toEqual({
+      type: 'function',
+      name: 'check_tutor_calendar',
+    });
+    expect(response?.response?.instructions).toContain('FUNCTION-CALL-ONLY');
   });
 
   it('reapplies catalog and direct-booking routing on later caller turns', async () => {

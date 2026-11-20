@@ -95,32 +95,32 @@ it('prepares exact, natural Saudi Arabic availability wording', async () => {
     ],
   }));
 
-  expect(
-    await tool.invoke(
-      { tutorId: 'elie-id', tutorName: 'Elie Saide' },
-      { ...context, locale: 'ar-SA' },
-    ),
-  ).toMatchObject({
+  const result = await tool.invoke(
+    { tutorId: 'elie-id', tutorName: 'Elie Saide' },
+    { ...context, locale: 'ar-SA' },
+  );
+
+  expect(result).toMatchObject({
     kind: 'ok',
     outcome: {
       output: {
-        tutorName: 'Elie Saide',
-        date: '2026-11-29',
-        spokenDate: 'الأحد، ٢٩ نوفمبر',
-        slots: [
-          {
-            spokenTime: 'من الساعة أحدعش ونص الصباح إلى الساعة اثنعش الظهر',
-          },
-          {
-            spokenTime: 'من الساعة اثنعش الظهر إلى الساعة وحدة بعد الظهر',
-          },
-        ],
+        status: 'available',
         spokenSummary:
           'المواعيد المتاحة مع Elie Saide يوم الأحد، ٢٩ نوفمبر: أول موعد: من الساعة أحدعش ونص الصباح إلى الساعة اثنعش الظهر. والموعد الثاني: من الساعة اثنعش الظهر إلى الساعة وحدة بعد الظهر.',
+        moreSlotsOnDate: false,
+        laterDatesAvailable: false,
       },
       followUpInstructions: expect.stringContaining(
-        'Say the returned spokenSummary exactly once',
+        'Speak only the returned spokenSummary verbatim',
       ),
     },
   });
+  if (result.kind === 'ok') {
+    expect(result.outcome.output).not.toHaveProperty('slots');
+    expect(result.outcome.output).not.toHaveProperty('timeZone');
+  }
+  expect(JSON.stringify(result)).not.toContain('"timeFrom"');
+  expect(JSON.stringify(result)).not.toContain('"timeTo"');
+  expect(JSON.stringify(result)).not.toContain('12:00');
+  expect(JSON.stringify(result)).not.toContain('13:00');
 });
