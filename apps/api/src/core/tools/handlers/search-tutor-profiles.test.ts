@@ -57,7 +57,7 @@ it('returns all matching safe profiles together with browser image metadata', as
   expect(first).toMatchObject({
     outcome: {
       followUpInstructions: expect.stringContaining(
-        "returned tutors' fullName values, exactly as written",
+        'tutor teaches the requested subject',
       ),
     },
   });

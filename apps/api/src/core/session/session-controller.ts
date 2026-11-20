@@ -155,7 +155,23 @@ function requestsLaterTutorDates(value: string): boolean {
     ) ||
     /(?:مواعيد|مواقيت|أوقات|تواريخ).*(?:تانية|ثانية|أخرى|لاحقة|تالية)\b/u.test(
       normalized,
+    ) ||
+    /(?:غير|بدون).*(?:الأحد|اليوم|التاريخ|الموعد)/u.test(normalized) ||
+    /(?:يوم|تاريخ|موعد).*(?:ثاني|آخر|غيره|تالي|لاحق)/u.test(normalized) ||
+    /(?:فكتر|فكرة|شو في|وش فيه|ايش فيه).*(?:المواعيد|مواعيد|الأوقات|اوقات)/u.test(
+      normalized,
     )
+  );
+}
+
+function isTutorDatesAffirmation(value: string): boolean {
+  const normalized = value
+    .normalize('NFKC')
+    .toLocaleLowerCase()
+    .replace(/[^\p{L}\p{N}\s]+/gu, ' ')
+    .trim();
+  return /^(?:أذكر|اذكر|أذكار|اذكار|نعم|ايه|إيه|أكيد|اكيد|حلو|تمام|يلا|لو سمحت|ابغى|بدي)$/u.test(
+    normalized,
   );
 }
 
@@ -908,9 +924,12 @@ export class SessionController {
       }
     }
     const namedCourseAction = requestsNamedCourseAction(transcript);
+    const asksLaterTutorDates =
+      requestsLaterTutorDates(transcript) ||
+      (this.conversation.pendingMoreTutorDates &&
+        isTutorDatesAffirmation(transcript));
     this.requestNextTutorDates =
-      requestsLaterTutorDates(transcript) &&
-      Boolean(this.conversation.lastTutorCalendarDate);
+      asksLaterTutorDates && Boolean(this.conversation.lastTutorCalendarDate);
     this.pendingTurnRoute = routeCallerTurn(
       {
         verified: this.customerVerified,
@@ -930,7 +949,8 @@ export class SessionController {
         bookingConfirmed: isExplicitBookingConfirmation(transcript),
         protectedActionRequested:
           requestsProtectedBookingOrVerification(transcript),
-        tutorCalendarRequested: requestsTutorCalendar(transcript),
+        tutorCalendarRequested:
+          asksLaterTutorDates || requestsTutorCalendar(transcript),
         tutorProfilesRequested: requestsTutorProfileSearch(transcript),
         namedBookingRequested:
           requestsCourseBooking(transcript) && namedCourseAction,
@@ -1102,6 +1122,7 @@ export class SessionController {
             profiles?: unknown;
             levels?: unknown;
             date?: unknown;
+            laterDatesAvailable?: unknown;
           }
         | undefined;
       try {
@@ -1111,6 +1132,7 @@ export class SessionController {
           profiles?: unknown;
           levels?: unknown;
           date?: unknown;
+          laterDatesAvailable?: unknown;
         };
         status =
           typeof parsedOutput.status === 'string'
@@ -1153,6 +1175,9 @@ export class SessionController {
         typeof parsedOutput?.date === 'string'
       ) {
         this.conversation.rememberTutorCalendarDate(parsedOutput.date);
+        this.conversation.pendingMoreTutorDates =
+          parsedOutput.status === 'available' &&
+          parsedOutput.laterDatesAvailable === true;
       }
       if (
         result.name === 'recommend_course_bundle' &&

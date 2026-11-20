@@ -8,6 +8,7 @@ it('preserves structured references across tool workflows', () => {
   context.requireBundleLevel('Math', ['Elementary', 'Middle']);
   context.bookingStage = 'slots_offered';
   context.rememberTutorCalendarDate('2026-11-29');
+  context.pendingMoreTutorDates = true;
 
   expect(context).toMatchObject({
     subjectName: 'Math',
@@ -18,5 +19,6 @@ it('preserves structured references across tool workflows', () => {
     },
     bookingStage: 'slots_offered',
     lastTutorCalendarDate: '2026-11-29',
+    pendingMoreTutorDates: true,
   });
 });

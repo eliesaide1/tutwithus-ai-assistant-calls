@@ -1133,6 +1133,57 @@ describe('tool calls', () => {
     expect(response?.response?.instructions).toContain('FUNCTION-CALL-ONLY');
   });
 
+  it.each([
+    'المواعيد التاني',
+    'بدي أعرف شو في مواعيد تانية',
+    'شوف غير الأحد هيدا',
+    'شو فكتر هالمواعيد',
+    'إيه بدي أعرف شو في مواعيد تانية',
+  ])(
+    'routes Saudi follow-up date requests to the tutor calendar: %s',
+    async (transcript) => {
+      const t = createHarness(undefined, true, 'student', 'ar-SA', [
+        createCheckTutorCalendarTool(async () => ({
+          status: 'available',
+          slots: [
+            {
+              date: '2026-11-29',
+              timeFrom: '11:30',
+              timeTo: '12:00',
+            },
+          ],
+        })),
+      ]);
+      await t.controller.notifyAccountCheck(
+        'verified',
+        'server-token',
+        'student',
+      );
+      await acknowledgeToolUpdate(t.controller, t.sent);
+      await t.controller.handleEvent({
+        type: 'response.created',
+        response: { id: 'verification-notice' },
+      });
+      await t.controller.handleEvent({
+        type: 'response.done',
+        response: { id: 'verification-notice' },
+      });
+      t.sent.length = 0;
+
+      await t.controller.handleEvent({
+        type: 'conversation.item.input_audio_transcription.completed',
+        item_id: 'calendar-follow-up',
+        transcript,
+      });
+
+      const response = t.sent.find((event) => event.type === 'response.create');
+      expect(response?.response?.tool_choice).toEqual({
+        type: 'function',
+        name: 'check_tutor_calendar',
+      });
+    },
+  );
+
   it('reapplies catalog and direct-booking routing on later caller turns', async () => {
     const t = createHarness(undefined, true);
 

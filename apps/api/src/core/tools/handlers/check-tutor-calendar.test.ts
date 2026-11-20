@@ -110,7 +110,7 @@ it('prepares exact, natural Saudi Arabic availability wording', async () => {
         status: 'available',
         date: '2026-11-29',
         spokenSummary:
-          'المواعيد المتاحة مع Elie Saide يوم الأحد، ٢٩ نوفمبر: أول موعد: من الساعة أحدعش ونص الصباح إلى الظهر. والموعد الثاني: من الظهر إلى الواحدة بعد الظهر.',
+          'المواعيد المتاحة مع Elie Saide يوم الأحد، ٢٩ نوفمبر: أول موعد: من الساعة أحدعش ونص الصباح إلى اثنعش الظهر. والموعد الثاني: من اثنعش الظهر إلى الواحدة بعد الظهر.',
         moreSlotsOnDate: false,
         laterDatesAvailable: false,
       },
@@ -133,8 +133,8 @@ it('provides canonical spoken ranges for Saudi booking confirmation', async () =
   const tool = createPrepareCourseBookingTool();
 
   for (const [timeFrom, timeTo, spokenRange] of [
-    ['11:30', '12:00', 'من الحادي عشر والنصف الصباح إلى الظهر'],
-    ['12:00', '13:00', 'من الظهر إلى الواحدة بعد الظهر'],
+    ['11:30', '12:00', 'من الحادي عشر والنصف الصباح إلى اثنعش الظهر'],
+    ['12:00', '13:00', 'من اثنعش الظهر إلى الواحدة بعد الظهر'],
   ] as const) {
     const result = await tool.invoke(
       {

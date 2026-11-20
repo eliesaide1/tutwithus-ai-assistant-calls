@@ -6,6 +6,7 @@ export class ConversationContext {
   pendingBundleLevel: { subjectName: string; levels: string[] } | undefined;
   bookingStage: BookingStage = 'idle';
   lastTutorCalendarDate: string | undefined;
+  pendingMoreTutorDates = false;
 
   rememberSubject(subjectName: string | undefined): void {
     const normalized = subjectName?.trim();
