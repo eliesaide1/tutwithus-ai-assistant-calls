@@ -34,6 +34,49 @@
   gap: 1.5rem;
 }
 
+.ap-public-header__start {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-width: 0;
+}
+
+/* Shown only when the portal handed over a page to return to. */
+.ap-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: 0 0 auto;
+  padding: 0.45rem 0.85rem;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 25%, transparent);
+  border-radius: 999px;
+  color: var(--color-primary);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.ap-back-link:hover,
+.ap-back-link:focus-visible {
+  background: color-mix(in srgb, var(--color-primary) 8%, transparent);
+  border-color: var(--color-primary);
+}
+
+/* The arrow points back the way the text reads. */
+[dir='rtl'] .ap-back-link > span[aria-hidden='true'] {
+  transform: scaleX(-1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ap-back-link {
+    transition: none;
+  }
+}
+
 .ap-brand {
   display: block;
   width: clamp(10rem, 20vw, 14rem);

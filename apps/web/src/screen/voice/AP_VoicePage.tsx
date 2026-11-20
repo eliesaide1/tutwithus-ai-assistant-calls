@@ -25,13 +25,14 @@ import {
   type TutorProfileDisplay,
 } from './realtime-connection';
 import { playSpeechStream } from './streaming-speech';
-import { readBrowserIdentityProof } from './browser-identity';
+import { readBrowserIdentityProof, readReturnTo } from './browser-identity';
 import { ScreenWakeLock } from './screen-wake-lock';
 import { detectBrowserTimeZone } from './browser-timezone';
 import './AP_VoicePage.css';
 
 export function AP_VoicePage() {
   const [identityProof] = useState(readBrowserIdentityProof);
+  const [returnTo] = useState(readReturnTo);
   const [locale, setLocale] = useState<Locale>('en');
   const [config, setConfig] = useState<PublicConfig | null>(null);
   const [configError, setConfigError] = useState(false);
@@ -534,12 +535,23 @@ export function AP_VoicePage() {
         ref={arabicAudioRef}
       />
       <header className="ap-public-header">
-        <div className="ap-brand">
-          <img
-            alt={text.brandName}
-            className="ap-brand__logo"
-            src={BRAND_LOGO_SRC}
-          />
+        <div className="ap-public-header__start">
+          {returnTo && (
+            // Launched in a new tab, so there is no history to go back to —
+            // the portal passes the page the visitor left and this returns
+            // them to it.
+            <a className="ap-back-link" href={returnTo}>
+              <span aria-hidden="true">&#8592;</span>
+              <span>{text.backToSite}</span>
+            </a>
+          )}
+          <div className="ap-brand">
+            <img
+              alt={text.brandName}
+              className="ap-brand__logo"
+              src={BRAND_LOGO_SRC}
+            />
+          </div>
         </div>
         <AP_LanguageSwitch
           disabled={isStarting || callStatus !== null}
