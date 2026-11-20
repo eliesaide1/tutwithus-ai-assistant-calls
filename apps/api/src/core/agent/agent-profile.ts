@@ -1,7 +1,10 @@
 import type { Locale } from '@tutwithus/contracts';
 import type { AgentSettingsDraftRequestSchema } from '@tutwithus/contracts/admin';
 import type { z } from 'zod';
-import { SAUDI_ARABIC_SPEECH_GUIDE } from '../speech/saudi-arabic-speech.js';
+import {
+  normalizeSaudiArabicGreeting,
+  SAUDI_ARABIC_SPEECH_GUIDE,
+} from '../speech/saudi-arabic-speech.js';
 
 type AgentSettings = Pick<
   z.infer<typeof AgentSettingsDraftRequestSchema>,
@@ -19,7 +22,7 @@ export type AgentProfile = {
 };
 
 const defaultGreetings: Record<Locale, string> = {
-  'ar-SA': 'أهلًا بك في TutWithUs، كيف أقدر أساعدك اليوم؟',
+  'ar-SA': 'هلا، أنا المساعد الذكي في تيوت وِذ أَس. وش أقدر أساعدك فيه؟',
   en: 'Thank you for calling TutWithUs. How may I help you today?',
   fr: 'Bonjour, merci d’avoir contacté TutWithUs. Comment puis-je vous aider aujourd’hui ?',
 };
@@ -175,7 +178,12 @@ export function buildAgentProfile(
   locale: Locale,
   settings?: AgentSettings | null,
 ): AgentProfile {
-  const greeting = settings?.greeting[locale] ?? defaultGreetings[locale];
+  const configuredGreeting =
+    settings?.greeting[locale] ?? defaultGreetings[locale];
+  const greeting =
+    locale === 'ar-SA'
+      ? normalizeSaudiArabicGreeting(configuredGreeting)
+      : configuredGreeting;
   const customInstructions = settings?.instructionTemplate.trim();
 
   const pricingPolicy = {
