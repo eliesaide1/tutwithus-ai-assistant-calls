@@ -184,14 +184,14 @@ describe('connectBrowserVoiceSession', () => {
     });
   });
 
-  it('asks for text replies in Arabic, which is spoken by a separate voice', async () => {
+  it('keeps Arabic replies on OpenAI audio output', async () => {
     const t = createSetup({ locale: 'ar-SA' });
     await connectBrowserVoiceSession(t.deps, t.input);
 
     const request = (t.provider.createCall.mock.calls[0] as unknown[])[0] as {
       session: { outputModalities: string[] };
     };
-    expect(request.session.outputModalities).toEqual(['text']);
+    expect(request.session.outputModalities).toEqual(['audio']);
   });
 
   it('starts a browser call as verified when credentials were checked before connection', async () => {

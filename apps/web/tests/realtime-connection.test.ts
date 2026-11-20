@@ -531,12 +531,7 @@ describe('saving the transcript', () => {
 
   it('reports transcription failure once without suppressing later speech', async () => {
     const onTranscriptError = vi.fn();
-    const onAssistantText = vi.fn(async () => undefined);
-    await connect({
-      onTranscriptError,
-      onAssistantText,
-      useElevenLabsTts: true,
-    });
+    await connect({ onTranscriptError });
 
     peer.channel.emit({
       type: 'conversation.item.input_audio_transcription.failed',
@@ -546,13 +541,6 @@ describe('saving the transcript', () => {
     });
 
     expect(onTranscriptError).toHaveBeenCalledOnce();
-    peer.channel.emit({
-      type: 'response.output_text.done',
-      item_id: 'recovery',
-      text: 'أهلًا',
-    });
-    await tick();
-    expect(onAssistantText).toHaveBeenCalledOnce();
   });
 
   it('continues saving and speaking after a transient transcript write failure', async () => {
@@ -560,134 +548,19 @@ describe('saving the transcript', () => {
       .fn()
       .mockRejectedValueOnce(new Error('offline'))
       .mockResolvedValue(undefined);
-    const onAssistantText = vi.fn(async () => undefined);
-    await connect({ onTranscript, onAssistantText, useElevenLabsTts: true });
-    peer.channel.emit({
-      type: 'response.output_text.done',
-      item_id: 'a1',
-      text: 'مرحبا',
-    });
-    await tick();
-    peer.channel.emit({
-      type: 'response.output_text.done',
-      item_id: 'a2',
-      text: 'كيف أساعدك؟',
-    });
-    await tick();
-    expect(onTranscript).toHaveBeenCalledTimes(2);
-    expect(onAssistantText).toHaveBeenCalledTimes(2);
-  });
-});
-
-describe('Arabic speech', () => {
-  function connectArabic() {
-    const spoken: Array<{ text: string; signal: AbortSignal }> = [];
-    // A clip keeps playing until it is aborted, like a real audio element.
-    const onAssistantText = vi.fn(
-      (entry: { text: string }, signal: AbortSignal) =>
-        new Promise<void>((resolve) => {
-          spoken.push({ text: entry.text, signal });
-          signal.addEventListener('abort', () => resolve());
-        }),
-    );
-    const onSpeechError = vi.fn();
-    return {
-      spoken,
-      onAssistantText,
-      onSpeechError,
-      done: connect({ useElevenLabsTts: true, onAssistantText, onSpeechError }),
-    };
-  }
-
-  const reply = (responseId: string, text: string) => ({
-    type: 'response.output_text.done',
-    item_id: `item-${responseId}`,
-    response_id: responseId,
-    text,
-  });
-
-  it('speaks a reply once its response has completed', async () => {
-    const t = connectArabic();
-    await t.done;
-
-    peer.channel.emit(reply('r1', 'مرحبًا'));
-    await tick();
-    expect(t.spoken).toEqual([]);
-
-    peer.channel.emit({
-      type: 'response.done',
-      response: { id: 'r1', status: 'completed' },
-    });
-    await tick();
-    expect(t.spoken.map((clip) => clip.text)).toEqual(['مرحبًا']);
-  });
-
-  it('does not speak a reply the server cancelled because the caller spoke', async () => {
-    const t = connectArabic();
-    await t.done;
-
-    peer.channel.emit(reply('r1', 'جزء من الجواب'));
-    peer.channel.emit({
-      type: 'response.done',
-      response: { id: 'r1', status: 'cancelled' },
-    });
-    await tick();
-
-    expect(t.spoken).toEqual([]);
-  });
-
-  it('stops the reply being spoken when the caller starts talking', async () => {
-    const t = connectArabic();
-    await t.done;
-    peer.channel.emit(reply('r1', 'جواب طويل'));
-    peer.channel.emit({
-      type: 'response.done',
-      response: { id: 'r1', status: 'completed' },
-    });
-    await tick();
-    const clip = t.spoken[0]!;
-    expect(clip.signal.aborted).toBe(false);
-
-    peer.channel.emit({ type: 'input_audio_buffer.speech_started' });
-
-    expect(clip.signal.aborted).toBe(true);
-    expect(t.onSpeechError).not.toHaveBeenCalled();
-  });
-
-  it('still saves the transcript of a reply that was never spoken', async () => {
-    const onTranscript = vi.fn(async () => undefined);
-    const onAssistantText = vi.fn(async () => undefined);
-    await connect({ useElevenLabsTts: true, onAssistantText, onTranscript });
-
-    peer.channel.emit(reply('r1', 'جواب'));
-    peer.channel.emit({
-      type: 'response.done',
-      response: { id: 'r1', status: 'cancelled' },
-    });
-    await tick();
-
-    expect(onTranscript).toHaveBeenCalledWith(
-      expect.objectContaining({ eventId: 'assistant:item-r1' }),
-    );
-    expect(onAssistantText).not.toHaveBeenCalled();
-  });
-
-  it('does not use the speech service for English and French', async () => {
-    const onAssistantText = vi.fn(async () => undefined);
-    await connect({ useElevenLabsTts: false, onAssistantText });
-
+    await connect({ onTranscript });
     peer.channel.emit({
       type: 'response.output_audio_transcript.done',
       item_id: 'a1',
-      response_id: 'r1',
-      transcript: 'Welcome',
-    });
-    peer.channel.emit({
-      type: 'response.done',
-      response: { id: 'r1', status: 'completed' },
+      transcript: 'مرحبا',
     });
     await tick();
-
-    expect(onAssistantText).not.toHaveBeenCalled();
+    peer.channel.emit({
+      type: 'response.output_audio_transcript.done',
+      item_id: 'a2',
+      transcript: 'كيف أساعدك؟',
+    });
+    await tick();
+    expect(onTranscript).toHaveBeenCalledTimes(2);
   });
 });

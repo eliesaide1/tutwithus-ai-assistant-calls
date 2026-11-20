@@ -44,7 +44,6 @@ export function toVoiceSessionApiError(
   }
   if (
     error.code === 'OPENAI_NOT_CONFIGURED' ||
-    error.code === 'ELEVENLABS_NOT_CONFIGURED' ||
     error.code === 'CALL_CAPACITY_REACHED'
   ) {
     return new ApiError(503, error.code, error.message);

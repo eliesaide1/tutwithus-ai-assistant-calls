@@ -9,7 +9,6 @@ import {
   getPublicConfig,
   PublicApiError,
   saveVoiceTranscriptEntry,
-  streamSaudiArabicSpeech,
   type CreateVoiceSessionResponse,
   type PublicConfig,
 } from '../../shared/public-api';
@@ -24,7 +23,6 @@ import {
   type BundleCarouselDisplay,
   type TutorProfileDisplay,
 } from './realtime-connection';
-import { playSpeechStream } from './streaming-speech';
 import { readBrowserIdentityProof, readReturnTo } from './browser-identity';
 import { ScreenWakeLock } from './screen-wake-lock';
 import { detectBrowserTimeZone } from './browser-timezone';
@@ -49,7 +47,6 @@ export function AP_VoicePage() {
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
   const [isMuted, setIsMuted] = useState(false);
   const [isMobileLayout, setIsMobileLayout] = useState(false);
-  const [callGenerationKey, setCallGenerationKey] = useState(0);
   const [activeTutorProfiles, setActiveTutorProfiles] = useState<
     TutorProfileDisplay[]
   >([]);
@@ -72,7 +69,6 @@ export function AP_VoicePage() {
   const tutorCarouselTimerRef = useRef<number | null>(null);
   const endingCallRef = useRef(false);
   const transcriptWritesRef = useRef<Promise<void>>(Promise.resolve());
-  const arabicAudioRef = useRef<HTMLAudioElement>(null);
   const orbRef = useRef<HTMLDivElement>(null);
   const mobileOrbRef = useRef<HTMLDivElement>(null);
   const screenWakeLockRef = useRef<ScreenWakeLock | null>(null);
@@ -197,39 +193,9 @@ export function AP_VoicePage() {
     remoteStreamRef.current?.getTracks().forEach((track) => track.stop());
     remoteStreamRef.current = null;
     void screenWakeLockRef.current?.stop();
-    const audio = arabicAudioRef.current;
-    audio?.pause();
-    if (audio) {
-      audio.removeAttribute('src');
-      audio.load();
-    }
     setRemoteStream(null);
     setIsAssistantSpeaking(false);
     setActiveTutorProfiles([]);
-  }
-
-  async function playSaudiArabicSpeech(
-    session: CreateVoiceSessionResponse,
-    text: string,
-    signal: AbortSignal,
-  ) {
-    const audio = arabicAudioRef.current;
-    if (!audio) throw new Error('Saudi Arabic audio player is unavailable.');
-    // Retry only before anything was audible, so callers never hear a repeated
-    // partial answer. Arabic speech always stays on ElevenLabs.
-    let audible = false;
-    for (let attempt = 0; attempt < 2; attempt += 1) {
-      try {
-        const stream = await streamSaudiArabicSpeech(session, text, signal);
-        await playSpeechStream(audio, stream, signal, (speaking) => {
-          audible ||= speaking;
-          setIsAssistantSpeaking(speaking);
-        });
-        return;
-      } catch (error) {
-        if (signal.aborted || audible || attempt === 1) throw error;
-      }
-    }
   }
 
   async function finishCall(
@@ -288,7 +254,6 @@ export function AP_VoicePage() {
     callStartGuardRef.current = true;
     const callGeneration = callGenerationRef.current + 1;
     callGenerationRef.current = callGeneration;
-    setCallGenerationKey(callGeneration);
     const isCurrentCall = () =>
       callGeneration === callGenerationRef.current && !endingCallRef.current;
 
@@ -376,7 +341,6 @@ export function AP_VoicePage() {
         localStream,
         session: createdSession,
         signal: connectAbort.signal,
-        useElevenLabsTts: locale === 'ar-SA',
         onPeerConnection: (connection) => {
           if (!isCurrentCall()) {
             connection.close();
@@ -428,16 +392,6 @@ export function AP_VoicePage() {
         onTranscriptError: () => {
           if (!isCurrentCall()) return;
           setStartError(text.transcriptSaveError);
-        },
-        onAssistantText: (entry, signal) => {
-          if (!isCurrentCall()) return Promise.resolve();
-          return playSaudiArabicSpeech(createdSession, entry.text, signal);
-        },
-        onSpeechError: () => {
-          if (isCurrentCall()) {
-            setStartError(text.voiceServiceUnavailable);
-            void finishCall('speech_synthesis_failed', callGeneration);
-          }
         },
         onTutorProfiles: (profiles) => {
           if (!isCurrentCall()) return;
@@ -528,12 +482,6 @@ export function AP_VoicePage() {
       dir={direction}
       lang={locale}
     >
-      <audio
-        aria-hidden="true"
-        hidden
-        key={callGenerationKey}
-        ref={arabicAudioRef}
-      />
       <header className="ap-public-header">
         <div className="ap-public-header__start">
           {returnTo && (

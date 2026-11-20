@@ -3,7 +3,6 @@ import {
   type CreateVoiceSessionResponse,
 } from '../../shared/public-api';
 import type { VoiceTranscriptEntry } from '@tutwithus/contracts';
-import { createAssistantSpeechQueue } from './assistant-speech-queue';
 
 type RealtimeConnectionOptions = {
   localStream: MediaStream;
@@ -14,12 +13,6 @@ type RealtimeConnectionOptions = {
   onRemoteStream: (stream: MediaStream) => void;
   onTranscript: (entry: VoiceTranscriptEntry) => Promise<void>;
   onTranscriptError: (error: unknown) => void;
-  useElevenLabsTts?: boolean;
-  onAssistantText?: (
-    entry: VoiceTranscriptEntry,
-    signal: AbortSignal,
-  ) => Promise<void>;
-  onSpeechError?: (error: unknown) => void;
   onTutorProfile?: (profile: TutorProfileDisplay) => void;
   onTutorProfiles?: (profiles: TutorProfileDisplay[]) => void;
   onCallerSpeechStarted?: () => void;
@@ -68,9 +61,6 @@ export async function connectRealtimeVoice({
   onRemoteStream,
   onTranscript,
   onTranscriptError,
-  useElevenLabsTts = false,
-  onAssistantText,
-  onSpeechError,
   onTutorProfile,
   onTutorProfiles,
   onCallerSpeechStarted,
@@ -105,16 +95,6 @@ export async function connectRealtimeVoice({
     });
   };
   let transcriptQueue = Promise.resolve();
-  // Arabic replies are spoken by a separate voice, so the browser has to stop
-  // them itself when the caller talks over them.
-  const speech =
-    useElevenLabsTts && onAssistantText
-      ? createAssistantSpeechQueue({
-          speak: onAssistantText,
-          onError: (error) => onSpeechError?.(error),
-          signal,
-        })
-      : undefined;
   let transcriptFailureReported = false;
   let sensitiveInputExpected = false;
   const memberVerificationCallIds = new Set<string>();
@@ -220,7 +200,6 @@ export async function connectRealtimeVoice({
 
     // The caller started talking: stop the agent's spoken reply at once.
     if (parsedEvent?.type === 'input_audio_buffer.speech_started') {
-      speech?.interrupt();
       onCallerSpeechStarted?.();
       return;
     }
@@ -241,10 +220,6 @@ export async function connectRealtimeVoice({
     }
     if (parsedEvent?.type === 'response.done') {
       const response = parsedEvent.response;
-      speech?.responseDone(
-        typeof response?.id === 'string' ? response.id : undefined,
-        typeof response?.status === 'string' ? response.status : undefined,
-      );
       if (
         openingGreetingPending &&
         (!openingGreetingResponseId ||
@@ -287,14 +262,6 @@ export async function connectRealtimeVoice({
           onTranscriptError(error);
         }
       });
-    if (speech && entry.speaker === 'assistant') {
-      speech.hold(
-        typeof parsedEvent?.response_id === 'string'
-          ? parsedEvent.response_id
-          : undefined,
-        entry,
-      );
-    }
   });
   peer.addEventListener('track', (event) => {
     const stream = event.streams[0];

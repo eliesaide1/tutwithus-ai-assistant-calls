@@ -48,6 +48,10 @@ it('returns all matching safe profiles together with browser image metadata', as
       },
     },
   });
+  expect(search).toHaveBeenCalledWith({
+    subjectName: 'Math',
+    subjectMatchMode: 'exact',
+  });
   expect(JSON.stringify(first)).toContain('Cara Tutor');
   expect(JSON.stringify(first)).toContain('Dan Tutor');
   expect(first).toMatchObject({
@@ -57,6 +61,7 @@ it('returns all matching safe profiles together with browser image metadata', as
       ),
     },
   });
+
   expect(first).toMatchObject({
     outcome: {
       output: {
@@ -65,6 +70,24 @@ it('returns all matching safe profiles together with browser image metadata', as
     },
   });
   expect(tool.access).toEqual({ kind: 'public' });
+});
+
+it('allows related matching only when requested', async () => {
+  const search = vi.fn(async () => ({
+    status: 'available' as const,
+    profiles,
+  }));
+  const tool = createSearchTutorProfilesTool(search);
+
+  await tool.invoke(
+    { subjectName: 'coding', subjectMatchMode: 'related' },
+    context,
+  );
+
+  expect(search).toHaveBeenCalledWith({
+    subjectName: 'coding',
+    subjectMatchMode: 'related',
+  });
 });
 
 it('does not invent profiles when the live directory is unavailable', async () => {

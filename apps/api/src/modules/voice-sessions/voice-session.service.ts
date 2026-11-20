@@ -37,7 +37,6 @@ export type VoiceSessionErrorCode =
   | 'SESSION_UNAUTHORIZED'
   | 'SESSION_ALREADY_USED'
   | 'OPENAI_NOT_CONFIGURED'
-  | 'ELEVENLABS_NOT_CONFIGURED'
   | 'CALL_CAPACITY_REACHED'
   | 'ACCOUNT_CHECK_LIMIT'
   | 'CUSTOMER_NOT_VERIFIED'
@@ -56,7 +55,7 @@ export class VoiceSessionError extends Error {
 
 type VoiceSessionConfig = Pick<
   ApiConfig,
-  'consentVersion' | 'maxCallSec' | 'retentionDays' | 'elevenLabs'
+  'consentVersion' | 'maxCallSec' | 'retentionDays'
 >;
 
 export async function createVoiceSession(
@@ -82,18 +81,6 @@ export async function createVoiceSession(
       'The consent notice has changed. Please review it and try again.',
     );
   }
-  if (
-    request.locale === 'ar-SA' &&
-    (!config.elevenLabs.apiKey ||
-      !config.elevenLabs.saudiArabicVoiceId ||
-      config.elevenLabs.saudiArabicVoiceId.startsWith('replace-with-'))
-  ) {
-    throw new VoiceSessionError(
-      'ELEVENLABS_NOT_CONFIGURED',
-      'Saudi Arabic speech is not configured.',
-    );
-  }
-
   let activeSettings: ActiveAgentSettings | null;
   try {
     activeSettings = await settingsReader.getActiveAgentSettings();

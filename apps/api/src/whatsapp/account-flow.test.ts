@@ -123,6 +123,12 @@ describe('WhatsApp member login authorization', () => {
     expect(result.instruction).toContain(
       'Do not speak a separate verification confirmation',
     );
+    expect(result.instruction).toContain(
+      'For a pending request about the tutor’s own availability, call get_my_tutor_availability as soon as it is listed',
+    );
+    expect(result.instruction).toContain(
+      'filter the returned entries to that period using today’s date and the call time zone',
+    );
     expect(s.directory.loginMember).toHaveBeenCalledWith({
       phone: '966500000001',
       memberId: '0012Ab',

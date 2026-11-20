@@ -93,10 +93,6 @@ services:
       - key: OPENAI_EMBEDDING_MODEL
         scope: RUN_TIME
         value: text-embedding-3-small
-      - key: ELEVENLABS_MODEL_ID
-        scope: RUN_TIME
-        value: eleven_multilingual_v2
-
       - key: VOICE_TURN_DETECTION
         scope: RUN_TIME
         value: server_vad
@@ -175,10 +171,6 @@ static_sites:
 #   MEMBER_VERIFICATION_SECRET  keys member-verification rate limits
 #   BROWSER_IDENTITY_SECRET     signed portal phone handoffs
 #   CALLER_HASH_SECRET          >= 16 chars; changing it unlinks repeat callers
-#
-# Saudi Arabic voice synthesis:
-#   ELEVENLABS_API_KEY
-#   ELEVENLABS_SAUDI_ARABIC_VOICE_ID
 #
 # Optional:
 #   REDIS_URL                   without it, limits are per-instance and

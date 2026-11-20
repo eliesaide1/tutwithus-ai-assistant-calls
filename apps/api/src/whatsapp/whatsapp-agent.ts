@@ -1,12 +1,10 @@
 import { cli, defineAgent, ServerOptions, voice } from '@livekit/agents';
-import * as elevenlabs from '@livekit/agents-plugin-elevenlabs';
 import * as openai from '@livekit/agents-plugin-openai';
 import { ParticipantKind } from '@livekit/rtc-node';
 import { createLogger, errorName } from '../lib/logger.js';
 import mongoose from 'mongoose';
 import { fileURLToPath } from 'node:url';
 import { buildAgentProfile } from '../core/agent/agent-profile.js';
-import { SPEECH_TEXT_REPLACEMENTS } from '../core/speech/brand-pronunciation.js';
 import { KnowledgeRetriever } from '../core/retrieval/knowledge-retriever.js';
 import { createVoiceTools } from '../core/tools/handlers/voice-tools.js';
 import { ToolGateway, type ToolCall } from '../core/tools/tool-gateway.js';
@@ -246,43 +244,20 @@ export default defineAgent({
       });
     const tools = makeTools();
 
-    const usesSaudiArabicVoice = profile.locale === 'ar-SA';
     const agent = new TranscriptGatedAgent({
       instructions: `${profile.instructions}\n\n${describeWhatsAppAccountPolicy(profile.locale, canVerifyCaller, registrationStatus)}`,
-      llm: usesSaudiArabicVoice
-        ? new openai.LLM({
-            model: config.openaiConversationModel,
-            apiKey: config.openaiApiKey,
-          })
-        : new openai.realtime.RealtimeModel({
-            model: config.openaiRealtimeModel,
-            apiKey: config.openaiApiKey,
-            voice: profile.voice,
-            turnDetection: {
-              type: 'server_vad',
-              threshold: 0.8,
-              prefix_padding_ms: 300,
-              silence_duration_ms: 500,
-              create_response: false,
-            },
-          }),
-      ...(usesSaudiArabicVoice
-        ? {
-            stt: new openai.STT({
-              model: config.openaiTranscriptionModel,
-              apiKey: config.openaiApiKey,
-              language: 'ar',
-              detectLanguage: false,
-              useRealtime: true,
-            }),
-            tts: new elevenlabs.TTS({
-              apiKey: config.elevenLabs.apiKey,
-              voiceId: config.elevenLabs.saudiArabicVoiceId,
-              model: config.elevenLabs.modelId,
-              languageCode: 'ar',
-            }),
-          }
-        : {}),
+      llm: new openai.realtime.RealtimeModel({
+        model: config.openaiRealtimeModel,
+        apiKey: config.openaiApiKey,
+        voice: profile.voice,
+        turnDetection: {
+          type: 'server_vad',
+          threshold: 0.8,
+          prefix_padding_ms: 300,
+          silence_duration_ms: 500,
+          create_response: false,
+        },
+      }),
       tools,
     });
     link.refreshAgentTools = () => agent.updateTools(makeTools());
@@ -291,16 +266,7 @@ export default defineAgent({
     // "Away" means neither side has spoken for this long (seconds).
     const session = new voice.AgentSession({
       userAwayTimeout: config.idleTimeoutSec,
-      turnDetection: usesSaudiArabicVoice ? 'stt' : 'realtime_llm',
-      ...(usesSaudiArabicVoice
-        ? {
-            ttsTextTransforms: [
-              'filter_markdown' as const,
-              'filter_emoji' as const,
-              voice.textTransforms.replace(SPEECH_TEXT_REPLACEMENTS),
-            ],
-          }
-        : {}),
+      turnDetection: 'realtime_llm',
     });
     const lifecycle = new CallLifecycle({
       session,
@@ -333,31 +299,29 @@ export default defineAgent({
       if (confirmationTranscriptGate(event))
         gateway.observeCallerTranscript(handle.sessionId, event.transcript);
     });
-    if (!usesSaudiArabicVoice) {
-      session.on(voice.AgentSessionEventTypes.UserInputTranscribed, (event) => {
-        if (!transcriptReplyGate(event)) {
-          return;
-        }
+    session.on(voice.AgentSessionEventTypes.UserInputTranscribed, (event) => {
+      if (!transcriptReplyGate(event)) {
+        return;
+      }
 
-        queueMicrotask(() => {
-          if (!lifecycle.isEnded) {
-            try {
-              session.generateReply();
-            } catch (error) {
-              logger.error(
-                {
-                  source: 'whatsapp',
-                  sessionId: handle.sessionId,
-                  errorName: errorName(error),
-                },
-                'Could not schedule a reply to the caller',
-              );
-              lifecycle.fail();
-            }
+      queueMicrotask(() => {
+        if (!lifecycle.isEnded) {
+          try {
+            session.generateReply();
+          } catch (error) {
+            logger.error(
+              {
+                source: 'whatsapp',
+                sessionId: handle.sessionId,
+                errorName: errorName(error),
+              },
+              'Could not schedule a reply to the caller',
+            );
+            lifecycle.fail();
           }
-        });
+        }
       });
-    }
+    });
     try {
       await session.start({ agent, room: ctx.room, record: false });
       session.generateReply({

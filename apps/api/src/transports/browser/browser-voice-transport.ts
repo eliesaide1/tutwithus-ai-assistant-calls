@@ -28,10 +28,8 @@ const DEFAULT_RESPONSE_EXPECTATION =
   'The TutWithUs team will review your request.';
 // How long a capacity slot is held beyond the call limit if the API dies mid-call.
 const CAPACITY_SLOT_GRACE_SEC = 60;
-// The Arabic path speaks through ElevenLabs after the text arrives, so it
-// needs longer before the hang-up than OpenAI's own audio does.
+// Allow a little extra time for the OpenAI Realtime goodbye audio to finish.
 const GOODBYE_GRACE_AUDIO_MS = 3_000;
-const GOODBYE_GRACE_TEXT_MS = 7_000;
 
 function browserAccountPolicy(
   locale: 'en' | 'fr' | 'ar-SA',
@@ -290,10 +288,7 @@ export async function connectBrowserVoiceSession(
         outputModalities: session.outputModalities,
       },
       limits: { maxCallSec, idleTimeoutSec: config.idleTimeoutSec },
-      goodbyePlaybackGraceMs:
-        session.outputModalities[0] === 'text'
-          ? GOODBYE_GRACE_TEXT_MS
-          : GOODBYE_GRACE_AUDIO_MS,
+      goodbyePlaybackGraceMs: GOODBYE_GRACE_AUDIO_MS,
       logger,
       hooks: {
         recordTranscript: async (turn) => {

@@ -9,6 +9,7 @@ const SearchTutorProfilesArgumentsSchema = z
   .object({
     tutorName: z.string().trim().min(1).max(128).optional(),
     subjectName: z.string().trim().min(1).max(128).optional(),
+    subjectMatchMode: z.enum(['exact', 'related']).default('exact'),
     curriculum: z.string().trim().min(1).max(128).optional(),
     listAll: z.boolean().default(false),
     another: z.boolean().default(false),
@@ -40,7 +41,7 @@ export function createSearchTutorProfilesTool(
     name: 'search_tutor_profiles',
     access: { kind: 'public' },
     description:
-      "Use this public live directory for questions about TutWithUs tutor names, subjects, degrees, schools, supported curriculums, or published ratings. For every subject, field, or broad-topic request, subjectName is mandatory and must contain the caller's complete topic phrase exactly as heard, including phrases such as 'computer science or coding'; never omit it and never inspect an unfiltered sample yourself. The server matches broad topics to related subjects such as Python and backend development. Tutor names are typo tolerant, so pass tutorName exactly as heard. Use listAll=true only when the caller explicitly asks for the full tutor directory and gives no filter. Do not use search_knowledge for current tutor-profile questions. Every call returns all matching profiles together, so do not call again with another=true after listing them; briefly say all matches were already listed if the caller asks for more. A public profile does not prove that a tutor can be booked or has an open time slot. When the caller asks for the calendar or availability of a returned tutor without naming a course, use check_tutor_calendar with that profile's id if it is listed and the caller is verified; a course name is not required to view the calendar. Never infer gender, languages, experience, age, nationality, ranking, or suitability from a name or picture. Never call a tutor the best unless returned data supports a requested objective comparison. A missing rating means no rating is published, not zero.",
+      "Use this public live directory for questions about TutWithUs tutor names, subjects, degrees, schools, supported curriculums, or published ratings. For a named subject or course, pass the caller's complete subjectName exactly as heard and set subjectMatchMode='exact'; exact matching never expands to related subjects. Use subjectMatchMode='related' only for a broad category request such as 'coding' or 'computer science or coding'. Never broaden a named subject to a related category or paraphrase its title. Tutor names are typo tolerant, so pass tutorName exactly as heard. Use listAll=true only when the caller explicitly asks for the full tutor directory and gives no filter. Do not use search_knowledge for current tutor-profile questions. Every call returns all matching profiles together, so do not call again with another=true after listing them; briefly say all matches were already listed if the caller asks for more. A public profile does not prove that a tutor can be booked or has an open time slot. When the caller asks for the calendar or availability of a returned tutor without naming a course, use check_tutor_calendar with that profile's id if it is listed and the caller is verified; a course name is not required to view the calendar. Never infer gender, languages, experience, age, nationality, ranking, or suitability from a name or picture. Never call a tutor the best unless returned data supports a requested objective comparison. A missing rating means no rating is published, not zero.",
     parameters: SearchTutorProfilesArgumentsSchema,
     maxCallsPerSession: 10,
     redact: (args) => ({
@@ -53,7 +54,12 @@ export function createSearchTutorProfilesTool(
     async execute(args) {
       const query = {
         ...(args.tutorName ? { tutorName: args.tutorName } : {}),
-        ...(args.subjectName ? { subjectName: args.subjectName } : {}),
+        ...(args.subjectName
+          ? {
+              subjectName: args.subjectName,
+              subjectMatchMode: args.subjectMatchMode,
+            }
+          : {}),
         ...(args.curriculum ? { curriculum: args.curriculum } : {}),
       };
       const result = await search(query);

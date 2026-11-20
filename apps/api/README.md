@@ -20,14 +20,14 @@ to these APIs.
 - **WhatsApp calling:** When `WHATSAPP_CALLING_ENABLED=true`, the API starts and
   manages a LiveKit agent as a child process. It shares the call tools,
   knowledge, session persistence, and TutWithUs integration; it is not a
-  separate backend service. Saudi Arabic calls use OpenAI for the language
-  model/transcription and ElevenLabs for speech output; other supported
-  WhatsApp locales use OpenAI Realtime.
+  separate backend service. All supported WhatsApp locales use OpenAI Realtime
+  for transcription, reasoning, and speech output. Saudi Arabic uses the
+  locale-specific instructions and configured OpenAI voice.
 - **Persistence and integrations:** MongoDB stores application records and is
   required for readiness. Redis is optional for queued maintenance jobs and
   cross-process call capacity. The server calls the TutWithUs API directly
-  through the external-service adapter. OpenAI, ElevenLabs, and LiveKit
-  credentials stay on the server.
+  through the external-service adapter. OpenAI and LiveKit credentials stay on
+  the server.
 - **Contracts:** Zod schemas in `src/contracts/` define API contracts and feed
   the generated OpenAPI document in `openapi/openapi.json`. That document
   covers the shared public/browser voice contracts, not every admin route. It

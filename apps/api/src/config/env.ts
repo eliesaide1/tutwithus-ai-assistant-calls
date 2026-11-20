@@ -115,16 +115,6 @@ const EnvironmentSchema = z
     VOICE_VAD_EAGERNESS: z
       .enum(['auto', 'low', 'medium', 'high'])
       .default('auto'),
-    ELEVENLABS_API_KEY: z.preprocess(
-      (value) => (value === '' ? undefined : value),
-      z.string().min(1).optional(),
-    ),
-    ELEVENLABS_SAUDI_ARABIC_VOICE_ID: z.preprocess(
-      (value) => (value === '' ? undefined : value),
-      z.string().min(1).optional(),
-    ),
-    ELEVENLABS_MODEL_ID: z.string().min(1).default('eleven_multilingual_v2'),
-
     CONSENT_VERSION: z
       .string()
       .regex(/^\d{4}-\d{2}-\d{2}\.\d+$/)
@@ -184,11 +174,6 @@ export type ApiConfig = {
     realtimeModel: string;
     embeddingModel: string;
     turnDetection?: RealtimeTurnDetection;
-  };
-  elevenLabs: {
-    apiKey: string | undefined;
-    saudiArabicVoiceId: string | undefined;
-    modelId: string;
   };
   consentVersion: string;
   consentText: Record<Locale, string>;
@@ -254,11 +239,6 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ApiConfig {
               prefix_padding_ms: DEFAULT_SERVER_VAD.prefix_padding_ms,
               create_response: false,
             },
-    },
-    elevenLabs: {
-      apiKey: e.ELEVENLABS_API_KEY,
-      saudiArabicVoiceId: e.ELEVENLABS_SAUDI_ARABIC_VOICE_ID,
-      modelId: e.ELEVENLABS_MODEL_ID,
     },
     consentVersion: e.CONSENT_VERSION,
     consentText: {

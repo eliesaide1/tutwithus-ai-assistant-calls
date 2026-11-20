@@ -9,7 +9,6 @@ const config = {
   consentVersion: '2026-11-04.1',
   maxCallSec: 300,
   retentionDays: 30,
-  elevenLabs: { apiKey: 'k', saudiArabicVoiceId: 'v', modelId: 'm' },
 };
 
 async function proofFor(claims: Record<string, string>) {

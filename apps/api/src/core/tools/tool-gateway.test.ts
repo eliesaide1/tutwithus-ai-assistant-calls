@@ -1531,6 +1531,12 @@ describe('get_my_tutor_availability', () => {
       status: 'available',
       availability: { availability: [{ day: 'Monday', from: '09:00' }] },
     });
+    expect(result.followUpInstructions).toContain(
+      'Filter the returned availability yourself to the caller’s original requested date/time period only',
+    );
+    expect(result.followUpInstructions).toContain(
+      'Today’s date in the call time zone (UTC) is',
+    );
     expect(result.output).not.toContain('server-only-token');
     expect(JSON.stringify(result)).not.toContain('1234567');
   });

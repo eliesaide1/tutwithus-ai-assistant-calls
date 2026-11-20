@@ -186,26 +186,6 @@ export async function connectVoiceSession(
   return parseRealtimeConnection(result);
 }
 
-export async function streamSaudiArabicSpeech(
-  session: CreateVoiceSessionResponse,
-  text: string,
-  signal: AbortSignal,
-): Promise<ReadableStream<Uint8Array>> {
-  const response = await apiRequest<ReadableStream<Uint8Array>>({
-    url: `/api/v1/voice/sessions/${encodeURIComponent(session.sessionId)}/speech`,
-    method: 'POST',
-    bearerToken: session.sessionToken,
-    headers: { Accept: 'audio/mpeg' },
-    data: { text },
-    signal,
-    responseType: 'stream',
-  });
-  if (!response.data || typeof response.data.getReader !== 'function') {
-    throw new PublicApiError('The speech service returned invalid audio.');
-  }
-  return response.data;
-}
-
 export async function saveVoiceTranscriptEntry(
   session: CreateVoiceSessionResponse,
   entry: VoiceTranscriptEntry,

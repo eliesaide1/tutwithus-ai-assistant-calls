@@ -74,19 +74,19 @@ describe('buildAgentProfile caller action policy', () => {
       'en',
       'one to three Arabic words',
       'at least four consecutive, recognizable Arabic words',
-      'Arabic-mode calls use the configured ElevenLabs voice',
+      'Never speak Arabic through the English OpenAI voice',
     ],
     [
       'fr',
       'd’un à trois mots arabes',
       'au moins quatre mots arabes consécutifs et reconnaissables',
-      'Les appels en mode arabe utilisent la voix ElevenLabs configurée',
+      'Ne parlez jamais arabe avec la voix OpenAI française',
     ],
     [
       'ar-SA',
       'كلمة إلى ثلاث كلمات بلغة أخرى',
       'أربع كلمات متتالية وواضحة بتلك اللغة',
-      'عبر صوت ElevenLabs المهيأ',
+      'صوت OpenAI المحدد للمكالمة وبلهجة سعودية واضحة',
     ],
   ] as const)(
     'requires clear language-change evidence and preserves Arabic voice routing in %s',
@@ -224,6 +224,21 @@ describe('buildAgentProfile caller action policy', () => {
     expect(instructions).toContain('list every returned name and nothing else');
     expect(instructions).toContain('Never close with a generic offer');
   });
+
+  it.each([
+    ['en', 'call it immediately', 'filter it yourself to the requested period only'],
+    ['fr', 'appelez-le immédiatement', 'filtrez vous-même les disponibilités à la période demandée uniquement'],
+    ['ar-SA', 'فاستدعها فورًا', 'رشّح بنفسك المواعيد إلى الفترة المطلوبة فقط'],
+  ] as const)(
+    'directs tutor availability requests to the verified tool and requested period in %s',
+    (locale, callInstruction, dateFilterInstruction) => {
+      const { instructions } = buildAgentProfile(locale);
+
+      expect(instructions).toContain('get_my_tutor_availability');
+      expect(instructions).toContain(callInstruction);
+      expect(instructions).toContain(dateFilterInstruction);
+    },
+  );
 
   it.each([
     [

@@ -25,7 +25,7 @@ export const DEFAULT_SERVER_VAD = Object.freeze({
 
 export type RealtimeSessionConfiguration = {
   instructions: string;
-  outputModalities: ['audio'] | ['text'];
+  outputModalities: ['audio'];
   transcriptionModel: 'gpt-transcribe';
   voice: AgentVoice;
   inputNoiseReduction?: { type: 'far_field' };
@@ -40,7 +40,7 @@ export function buildRealtimeSessionConfiguration(
 ): RealtimeSessionConfiguration {
   return {
     instructions: profile.instructions,
-    outputModalities: profile.locale === 'ar-SA' ? ['text'] : ['audio'],
+    outputModalities: ['audio'],
     transcriptionModel: 'gpt-transcribe',
     voice: profile.voice,
     inputNoiseReduction: { type: 'far_field' },

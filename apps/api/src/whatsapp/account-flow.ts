@@ -85,6 +85,12 @@ export function createVerifyMemberIdTool(options: {
   registrationStatus: WhatsAppRegistrationStatus;
 }) {
   const messages = accountMessages[options.locale];
+  const availabilityContinuation: Record<Locale, string> = {
+    en: 'For a pending request about the tutor’s own availability, call get_my_tutor_availability as soon as it is listed. Preserve the requested period, filter the returned entries to that period using today’s date and the call time zone, and do not ask for a day or time the caller already gave.',
+    fr: 'Pour une demande en attente sur les disponibilités personnelles du tuteur, appelez get_my_tutor_availability dès qu’il est listé. Conservez la période demandée, filtrez les entrées renvoyées selon cette période en utilisant la date du jour et le fuseau horaire de l’appel, et ne redemandez pas un jour ou un horaire déjà indiqué.',
+    'ar-SA':
+      'إذا كان الطلب المعلّق عن مواعيد المعلم نفسه، فاستدعِ get_my_tutor_availability فور إدراجها. احتفظ بالفترة المطلوبة، ورشّح النتائج بحسبها باستخدام تاريخ اليوم والمنطقة الزمنية للمكالمة، ولا تطلب يومًا أو وقتًا ذكره المتصل بالفعل.',
+  };
   return defineTool({
     name: 'verify_member_id',
     access: { kind: 'public' },
@@ -126,7 +132,7 @@ export function createVerifyMemberIdTool(options: {
           return {
             output: {
               status: 'verified',
-              instruction: `${messages.verifiedInstruction}\n${callerIntentPolicy(options.locale)}`,
+              instruction: `${messages.verifiedInstruction}\n${availabilityContinuation[options.locale]}\n${callerIntentPolicy(options.locale)}`,
             },
             customerVerified: true,
             serverAccessToken: result.accessToken,

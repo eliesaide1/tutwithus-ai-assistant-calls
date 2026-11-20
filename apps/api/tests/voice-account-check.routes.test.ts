@@ -33,11 +33,6 @@ const config: ApiConfig = {
     realtimeModel: 'test-model',
     embeddingModel: 'text-embedding-3-small',
   },
-  elevenLabs: {
-    apiKey: undefined,
-    saudiArabicVoiceId: undefined,
-    modelId: 'm',
-  },
   consentVersion: '2026-11-04.1',
   consentText: { 'ar-SA': 'test', en: 'test', fr: 'test' },
   maxCallSec: 300,

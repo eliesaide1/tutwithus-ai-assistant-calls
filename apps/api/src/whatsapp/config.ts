@@ -28,15 +28,7 @@ const EnvironmentSchema = z
     ),
     OPENAI_API_KEY: optionalValue,
     OPENAI_REALTIME_MODEL: z.string().min(1).default('gpt-realtime-2.1-mini'),
-    OPENAI_CONVERSATION_MODEL: z.string().min(1).default('gpt-4o-mini'),
     OPENAI_EMBEDDING_MODEL: z.string().min(1).default('text-embedding-3-small'),
-    OPENAI_TRANSCRIPTION_MODEL: z
-      .string()
-      .min(1)
-      .default('gpt-4o-mini-transcribe'),
-    ELEVENLABS_API_KEY: optionalValue,
-    ELEVENLABS_SAUDI_ARABIC_VOICE_ID: optionalValue,
-    ELEVENLABS_MODEL_ID: z.string().min(1).default('eleven_multilingual_v2'),
     WHATSAPP_CALLING_ENABLED: z
       .enum(['true', 'false'])
       .default('false')
@@ -82,12 +74,6 @@ const EnvironmentSchema = z
       !env.WHATSAPP_CALLING_ENABLED ||
       (env.MONGODB_URI !== undefined &&
         env.OPENAI_API_KEY !== undefined &&
-        (env.WHATSAPP_DEFAULT_LOCALE !== 'ar-SA' ||
-          (env.ELEVENLABS_API_KEY !== undefined &&
-            env.ELEVENLABS_SAUDI_ARABIC_VOICE_ID !== undefined &&
-            !env.ELEVENLABS_SAUDI_ARABIC_VOICE_ID.startsWith(
-              'replace-with-',
-            ))) &&
         env.WHATSAPP_LIVEKIT_SIP_TRUNK_ID !== undefined &&
         env.LIVEKIT_URL !== undefined &&
         env.LIVEKIT_API_KEY !== undefined &&
@@ -99,7 +85,7 @@ const EnvironmentSchema = z
     {
       path: ['WHATSAPP_CALLING_ENABLED'],
       message:
-        'Requires MongoDB, OpenAI, ElevenLabs for Saudi Arabic, and non-placeholder LiveKit credentials and SIP trunk ID.',
+        'Requires MongoDB, OpenAI, and non-placeholder LiveKit credentials and SIP trunk ID.',
     },
   );
 
@@ -108,14 +94,7 @@ export type WhatsAppWorkerConfig = {
   mongoUri: string | undefined;
   openaiApiKey: string | undefined;
   openaiRealtimeModel: string;
-  openaiConversationModel: string;
   openaiEmbeddingModel: string;
-  openaiTranscriptionModel: string;
-  elevenLabs: {
-    apiKey: string | undefined;
-    saudiArabicVoiceId: string | undefined;
-    modelId: string;
-  };
   tutWithUs: {
     baseUrl: string;
     timeoutMs: number;
@@ -155,14 +134,7 @@ export function loadConfig(
     mongoUri: parsed.data.MONGODB_URI,
     openaiApiKey: parsed.data.OPENAI_API_KEY,
     openaiRealtimeModel: parsed.data.OPENAI_REALTIME_MODEL,
-    openaiConversationModel: parsed.data.OPENAI_CONVERSATION_MODEL,
     openaiEmbeddingModel: parsed.data.OPENAI_EMBEDDING_MODEL,
-    openaiTranscriptionModel: parsed.data.OPENAI_TRANSCRIPTION_MODEL,
-    elevenLabs: {
-      apiKey: parsed.data.ELEVENLABS_API_KEY,
-      saudiArabicVoiceId: parsed.data.ELEVENLABS_SAUDI_ARABIC_VOICE_ID,
-      modelId: parsed.data.ELEVENLABS_MODEL_ID,
-    },
     tutWithUs: {
       baseUrl: parsed.data.TUTWITHUS_API_URL,
       timeoutMs: parsed.data.TUTWITHUS_TIMEOUT_MS,

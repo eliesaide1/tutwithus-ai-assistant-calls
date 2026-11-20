@@ -35,10 +35,9 @@ platform API through a server-side adapter.
 The production voice page obtains explicit consent before starting a call. The
 API creates the Realtime session, keeps the provider credentials, and controls
 server-side tools; caller and assistant transcripts are persisted when
-available, but audio recordings are not. English and French use OpenAI Realtime
-audio. For Saudi Arabic, OpenAI Realtime supplies caller transcription and
-assistant text, while the browser streams synthesized speech from ElevenLabs
-through the API.
+available, but audio recordings are not. English, French, and Saudi Arabic use
+OpenAI Realtime audio. Saudi Arabic uses locale-specific instructions and the
+configured OpenAI voice; no separate speech provider is required.
 
 When `WHATSAPP_CALLING_ENABLED=true`, the API starts and manages a LiveKit
 WhatsApp calling agent as a child process. This automated inbound-call worker
@@ -46,7 +45,7 @@ is separate from the WhatsApp console prototype. Live WhatsApp use also
 requires valid Meta webhook and LiveKit SIP configuration; see
 `docs/whatsapp-call-webhooks.md`.
 
-OpenAI, ElevenLabs, and LiveKit credentials belong in the API environment.
+OpenAI and LiveKit credentials belong in the API environment.
 Never put provider secrets in frontend `VITE_` variables.
 
 ## Local development

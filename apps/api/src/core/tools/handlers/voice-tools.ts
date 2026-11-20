@@ -421,7 +421,7 @@ export function createGetMyTutorAvailabilityTool(
     name: 'get_my_tutor_availability',
     access: { kind: 'roles', roles: ['tutor'] },
     description:
-      'Read the verified caller’s own tutor availability from TutWithUs. Call only when the caller asks about their availability and after member verification. The server will refuse this lookup unless the verified role is exactly tutor. This is separate from finding tutors or available booking slots. Never ask a student/customer to use this action. Do not expose profile identifiers, contact details, or other non-availability data.',
+      'Read the verified caller’s own tutor availability from TutWithUs. Call for a tutor’s own availability request, including requests with a date period. Preserve that period and filter the returned schedule to it. The server will refuse this lookup unless the verified role is exactly tutor. This is separate from finding tutors or available booking slots. Never ask a student/customer to use this action. Do not expose profile identifiers, contact details, or other non-availability data.',
     parameters: z.object({}).strict(),
     maxCallsPerSession: GET_TUTOR_AVAILABILITY_PER_SESSION,
     requiresVerifiedCustomer: true,
@@ -462,13 +462,14 @@ export function createGetMyTutorAvailabilityTool(
           }[context.locale],
         };
       }
+      const timeZone = sessionTimeZone(context);
+      const today = localDateInTimeZone(new Date(), timeZone);
       return {
         output: { status: 'available', availability: result.data },
         followUpInstructions: {
-          en: 'Professionally summarize only the availability information present in the returned data. Do not mention profile IDs, contact details, or unrelated profile data. Do not infer open times or schedules. If the result has no readable availability details, say that no availability details were returned; do not claim that the tutor has no availability.',
-          fr: 'Résumez de manière professionnelle uniquement les disponibilités présentes dans les données renvoyées. Ne mentionnez ni identifiant de profil, ni coordonnées, ni autres informations de profil. Ne déduisez aucun créneau ni horaire. Si le résultat ne contient aucun détail de disponibilité compréhensible, indiquez qu’aucun détail n’a été renvoyé ; ne dites pas que le tuteur n’a aucune disponibilité.',
-          'ar-SA':
-            'لخّص مواعيد التوفر الواردة في البيانات فقط وبأسلوب مهني. لا تذكر معرّفات الملف الشخصي أو بيانات الاتصال أو معلومات أخرى غير مرتبطة بالمواعيد. لا تستنتج أوقاتًا أو جداول غير مذكورة. إذا لم تتضمن النتيجة تفاصيل مواعيد واضحة، فقل إن تفاصيل المواعيد لم تُعرض، ولا تقل إن المعلم غير متاح.',
+          en: `Today’s date in the call time zone (${timeZone}) is ${today}. Filter the returned availability yourself to the caller’s original requested date/time period only; interpret relative dates from today in that time zone and omit all entries outside the period. If the returned data clearly describes a recurring weekday schedule, include only the occurrences within the requested period. Do not invent dates, recurring patterns, or openings. If the period cannot be matched reliably to the returned data, say the data does not specify availability for that period; claim no availability only if the returned data is sufficiently complete to establish that. Then summarize professionally. Never mention profile IDs, contact details, or unrelated profile data.`,
+          fr: `La date du jour dans le fuseau horaire de l’appel (${timeZone}) est ${today}. Filtrez vous-même les disponibilités renvoyées pour ne garder que la période demandée à l’origine, en interprétant les dates relatives à partir d’aujourd’hui dans ce fuseau ; omettez toutes les entrées hors période. Si les données décrivent clairement un horaire récurrent par jour de semaine, ne retenez que les occurrences dans la période. N’inventez ni date, ni récurrence, ni créneau. Si la période ne peut pas être reliée de façon fiable aux données, dites que celles-ci ne précisent pas les disponibilités pour cette période ; ne dites qu’il n’y en a aucune que si les données sont suffisamment complètes pour l’établir. Résumez ensuite avec professionnalisme. Ne mentionnez ni identifiant de profil, ni coordonnées, ni information sans rapport.`,
+          'ar-SA': `تاريخ اليوم في المنطقة الزمنية للمكالمة (${timeZone}) هو ${today}. رشّح بنفسك المواعيد المعادة لتعرض الفترة الزمنية التي طلبها المتصل أصلًا فقط؛ فسّر الفترات النسبية انطلاقًا من تاريخ اليوم وبهذا التوقيت، واحذف كل ما يقع خارج الفترة. إذا كانت البيانات تصف بوضوح جدولًا أسبوعيًا متكررًا، فاعرض الأيام الواقعة ضمن الفترة فقط. لا تخترع تواريخ أو تكرارًا أو أوقاتًا غير معادة. إذا تعذر مطابقة الفترة بالبيانات بثقة، فقل إن البيانات لا تحدد المواعيد لتلك الفترة؛ ولا تقل إنه لا توجد مواعيد إلا إذا كانت البيانات كاملة بما يكفي لإثبات ذلك. لخّص النتيجة بأسلوب مهني، ولا تذكر معرّفات الملف أو بيانات الاتصال أو معلومات غير مرتبطة.`,
         }[context.locale],
       };
     },

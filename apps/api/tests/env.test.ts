@@ -71,20 +71,6 @@ describe('API environment configuration', () => {
     ).toThrow('WHATSAPP_WEBHOOK_VERIFY_TOKEN');
   });
 
-  it('loads optional ElevenLabs configuration for Saudi Arabic speech', () => {
-    const config = loadConfig({
-      ...requiredEnvironment,
-      ELEVENLABS_API_KEY: 'test-elevenlabs-key',
-      ELEVENLABS_SAUDI_ARABIC_VOICE_ID: 'test-saudi-voice',
-    });
-
-    expect(config.elevenLabs).toEqual({
-      apiKey: 'test-elevenlabs-key',
-      saudiArabicVoiceId: 'test-saudi-voice',
-      modelId: 'eleven_multilingual_v2',
-    });
-  });
-
   it('parses exact CORS origins from a comma-separated environment value', () => {
     expect(
       loadConfig({

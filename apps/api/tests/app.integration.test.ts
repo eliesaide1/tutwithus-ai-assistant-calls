@@ -39,11 +39,6 @@ const config: ApiConfig = {
     realtimeModel: 'gpt-realtime-2.1-mini',
     embeddingModel: 'text-embedding-3-small',
   },
-  elevenLabs: {
-    apiKey: 'test-elevenlabs-key',
-    saudiArabicVoiceId: 'test-saudi-arabic-voice',
-    modelId: 'eleven_multilingual_v2',
-  },
   consentVersion: '2026-11-03.1',
   consentText: {
     'ar-SA': 'إشعار تجريبي',

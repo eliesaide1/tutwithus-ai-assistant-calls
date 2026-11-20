@@ -127,8 +127,14 @@ describe('TutWithUs external service client', () => {
         expect(exactCourse.profiles.map(({ id }) => id)).toEqual(['elie']);
       }
     }
+    await expect(
+      searchTutorProfiles(backend, {
+        subjectName: 'backend and server-side development',
+      }),
+    ).resolves.toMatchObject({ status: 'available', profiles: [] });
     const coding = await searchTutorProfiles(backend, {
       subjectName: 'coding',
+      subjectMatchMode: 'related',
     });
     expect(coding.status).toBe('available');
     if (coding.status === 'available') {
@@ -136,6 +142,7 @@ describe('TutWithUs external service client', () => {
     }
     const software = await searchTutorProfiles(backend, {
       subjectName: 'software engineering',
+      subjectMatchMode: 'related',
     });
     expect(software.status).toBe('available');
     if (software.status === 'available') {
@@ -143,6 +150,7 @@ describe('TutWithUs external service client', () => {
     }
     const compoundTopic = await searchTutorProfiles(backend, {
       subjectName: 'computer science or coding',
+      subjectMatchMode: 'related',
     });
     expect(compoundTopic.status).toBe('available');
     if (compoundTopic.status === 'available') {
@@ -154,6 +162,7 @@ describe('TutWithUs external service client', () => {
     for (const heardMath of ['mass', 'message', 'methods']) {
       const math = await searchTutorProfiles(backend, {
         subjectName: heardMath,
+        subjectMatchMode: 'related',
       });
       expect(math.status).toBe('available');
       if (math.status === 'available') {

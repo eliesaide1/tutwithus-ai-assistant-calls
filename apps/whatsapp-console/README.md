@@ -38,8 +38,7 @@ corepack pnpm --filter @tutwithus/whatsapp-console dev
 ```
 
 Vite runs on port 5174. The optional static site is configured in the root
-`render.yaml`. The `.env.example` is intentionally empty. Do not put OpenAI,
-ElevenLabs, LiveKit, or other provider credentials in this frontend; those
+`render.yaml`. The `.env.example` is intentionally empty. Do not put OpenAI, LiveKit, or other provider credentials in this frontend; those
 belong in the API environment.
 
 ## Checks

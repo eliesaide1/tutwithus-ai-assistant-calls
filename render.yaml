@@ -23,10 +23,6 @@ services:
         sync: false
       - key: OPENAI_API_KEY
         sync: false
-      - key: ELEVENLABS_API_KEY
-        sync: false
-      - key: ELEVENLABS_SAUDI_ARABIC_VOICE_ID
-        sync: false
       - key: ADMIN_JWT_SECRET
         generateValue: true
       - key: MEMBER_VERIFICATION_SECRET

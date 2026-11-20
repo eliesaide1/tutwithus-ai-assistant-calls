@@ -25,8 +25,6 @@ describe('WhatsApp worker environment configuration', () => {
         WHATSAPP_CALLING_ENABLED: 'true',
         MONGODB_URI: 'mongodb://localhost/test',
         OPENAI_API_KEY: 'test-key',
-        ELEVENLABS_API_KEY: 'test-elevenlabs-key',
-        ELEVENLABS_SAUDI_ARABIC_VOICE_ID: 'saudi-voice',
         WHATSAPP_LIVEKIT_SIP_TRUNK_ID: 'trunk-id',
         LIVEKIT_URL: 'wss://livekit.example.com',
         LIVEKIT_API_KEY: 'replace-with-livekit-api-key',
@@ -42,8 +40,6 @@ describe('WhatsApp worker environment configuration', () => {
       WHATSAPP_CALLING_ENABLED: 'true',
       MONGODB_URI: 'mongodb://localhost/test',
       OPENAI_API_KEY: 'test-key',
-      ELEVENLABS_API_KEY: 'test-elevenlabs-key',
-      ELEVENLABS_SAUDI_ARABIC_VOICE_ID: 'saudi-voice',
       WHATSAPP_LIVEKIT_SIP_TRUNK_ID: 'trunk-id',
       WHATSAPP_DEFAULT_LOCALE: 'en',
       LIVEKIT_URL: 'wss://livekit.example.com',
@@ -104,19 +100,4 @@ describe('WhatsApp worker environment configuration', () => {
     },
   );
 
-  it('requires an ElevenLabs Saudi Arabic voice when Arabic calling is enabled', () => {
-    expect(() =>
-      loadConfig({
-        NODE_ENV: 'test',
-        WHATSAPP_CALLING_ENABLED: 'true',
-        MONGODB_URI: 'mongodb://localhost/test',
-        OPENAI_API_KEY: 'test-key',
-        WHATSAPP_LIVEKIT_SIP_TRUNK_ID: 'trunk-id',
-        LIVEKIT_URL: 'wss://livekit.example.com',
-        LIVEKIT_API_KEY: 'livekit-key',
-        LIVEKIT_API_SECRET: 'livekit-secret',
-        CALLER_HASH_SECRET: 'a-long-test-secret-value',
-      }),
-    ).toThrow('WHATSAPP_CALLING_ENABLED');
-  });
 });

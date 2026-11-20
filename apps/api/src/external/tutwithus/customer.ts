@@ -66,6 +66,7 @@ export type TutorProfile = {
 export type TutorProfileSearch = {
   tutorName?: string;
   subjectName?: string;
+  subjectMatchMode?: 'exact' | 'related';
   curriculum?: string;
 };
 export type TutorProfilesResult =
@@ -555,7 +556,8 @@ export async function searchTutorProfiles(
         (!query.subjectName ||
           (subjectPool
             ? subjectPool.has(profile.id)
-            : profile.subjects.some((subject) =>
+            : query.subjectMatchMode === 'related' &&
+              profile.subjects.some((subject) =>
                 subjectMatches(subject, query.subjectName!),
               ))) &&
         (!query.curriculum ||

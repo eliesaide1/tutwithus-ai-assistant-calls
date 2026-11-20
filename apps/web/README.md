@@ -49,7 +49,7 @@ public API origin when deploying separately. It is embedded at build time and
 must never contain a secret. The root `render.yaml` supplies the deployment
 configuration.
 
-OpenAI, ElevenLabs, and LiveKit credentials belong only in the API environment,
+OpenAI and LiveKit credentials belong only in the API environment,
 never in this app's Vite variables.
 
 ## Checks
