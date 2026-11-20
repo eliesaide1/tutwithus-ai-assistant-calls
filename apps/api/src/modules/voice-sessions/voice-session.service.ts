@@ -1,5 +1,6 @@
 import { randomUUID, timingSafeEqual } from 'node:crypto';
 import { verifyBrowserIdentity } from './browser-identity.js';
+import type { AccountCheckNotifier } from '../../core/session/active-calls.js';
 import type {
   CreateVoiceSessionRequest,
   VoiceTranscriptEntry,
@@ -64,6 +65,9 @@ export async function createVoiceSession(
   repository: VoiceSessionRepository,
   settingsReader: AgentProfileSettingsReader,
   customerDirectory: CustomerDirectory,
+  // Optional so the session can still be created where no call registry
+  // exists, such as in tests and the WhatsApp path.
+  accountCheckNotifier?: AccountCheckNotifier,
 ) {
   if (request.captchaToken !== undefined) {
     throw new VoiceSessionError(
@@ -101,7 +105,8 @@ export async function createVoiceSession(
     );
   }
   const maxCallSec = activeSettings?.maxCallSec ?? config.maxCallSec;
-  const trustedPhone = await verifyBrowserIdentity(request.identityProof);
+  const trustedIdentity = await verifyBrowserIdentity(request.identityProof);
+  const trustedPhone = trustedIdentity?.phone;
   const enteredPhone = request.phone
     ? canonicalPhone(request.phone)
     : undefined;
@@ -163,6 +168,35 @@ export async function createVoiceSession(
       'Voice session persistence failed.',
       { cause: error },
     );
+  }
+
+  // A caller handed over by the signed-in portal never types a member id, so
+  // the member login that account tools depend on for an access token would
+  // never run. Run it here with the pair the portal proved, and park the
+  // result for the call to pick up when it connects.
+  //
+  // Failure is deliberately quiet: the caller still gets a call with public
+  // knowledge, exactly as if the lookup had been unavailable.
+  if (
+    trustedIdentity?.memberId &&
+    callbackPhone &&
+    accountCheckNotifier &&
+    customerDirectory.loginMember
+  ) {
+    try {
+      const login = await customerDirectory.loginMember({
+        phone: callbackPhone,
+        memberId: trustedIdentity.memberId,
+      });
+      await accountCheckNotifier.notifyAccountCheck(
+        record.sessionId,
+        login.status === 'not_verified' ? 'not_registered' : login.status,
+        login.status === 'verified' ? login.accessToken : undefined,
+        login.status === 'verified' ? login.role : undefined,
+      );
+    } catch {
+      // Leave the call in knowledge-only mode rather than failing to start.
+    }
   }
 
   return {

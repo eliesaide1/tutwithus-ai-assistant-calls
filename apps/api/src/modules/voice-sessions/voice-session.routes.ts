@@ -277,6 +277,7 @@ export function createVoiceSessionRouter(
           repository,
           settingsReader,
           customers,
+          activeCalls,
         );
         response.status(201).json(session);
       } catch (error) {
