@@ -109,14 +109,14 @@ it('prepares exact, natural Saudi Arabic availability wording', async () => {
         spokenDate: 'الأحد، ٢٩ نوفمبر',
         slots: [
           {
-            spokenTime: 'من الساعة ١١ ونص الصباح إلى الساعة ١٢ الظهر',
+            spokenTime: 'من الساعة أحدعش ونص الصباح إلى الساعة اثنعش الظهر',
           },
           {
-            spokenTime: 'من الساعة ١٢ الظهر إلى الساعة ١ الظهر',
+            spokenTime: 'من الساعة اثنعش الظهر إلى الساعة وحدة بعد الظهر',
           },
         ],
         spokenSummary:
-          'المواعيد المتاحة مع Elie Saide يوم الأحد، ٢٩ نوفمبر: من الساعة ١١ ونص الصباح إلى الساعة ١٢ الظهر، من الساعة ١٢ الظهر إلى الساعة ١ الظهر.',
+          'المواعيد المتاحة مع Elie Saide يوم الأحد، ٢٩ نوفمبر: أول موعد: من الساعة أحدعش ونص الصباح إلى الساعة اثنعش الظهر. والموعد الثاني: من الساعة اثنعش الظهر إلى الساعة وحدة بعد الظهر.',
       },
       followUpInstructions: expect.stringContaining(
         'Say the returned spokenSummary exactly once',

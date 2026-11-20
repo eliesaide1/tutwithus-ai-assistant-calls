@@ -1754,7 +1754,23 @@ export function createCheckTutorCalendarTool(
                 /\d/g,
                 (digit) => '٠١٢٣٤٥٦٧٨٩'[Number(digit)] ?? digit,
               );
-            const spokenHour = hour % 12 || 12;
+            const spokenHours = [
+              '',
+              'وحدة',
+              'ثنتين',
+              'ثلاث',
+              'أربع',
+              'خمس',
+              'ست',
+              'سبع',
+              'ثمان',
+              'تسع',
+              'عشر',
+              'أحدعش',
+              'اثنعش',
+            ];
+            const hour12 = hour % 12 || 12;
+            const spokenHour = minute === '45' ? (hour12 % 12) + 1 : hour12;
             const spokenMinute =
               minute === '00'
                 ? ''
@@ -1762,7 +1778,9 @@ export function createCheckTutorCalendarTool(
                   ? ' ونص'
                   : minute === '15'
                     ? ' وربع'
-                    : ` و${arabicDigits(String(Number(minute)))} دقيقة`;
+                    : minute === '45'
+                      ? ' إلا ربع'
+                      : ` و${arabicDigits(String(Number(minute)))} دقيقة`;
             const dayPart =
               hour === 0
                 ? 'بعد منتصف الليل'
@@ -1770,14 +1788,18 @@ export function createCheckTutorCalendarTool(
                   ? 'بالليل'
                   : hour < 12
                     ? 'الصباح'
-                    : hour < 15
+                    : hour === 12
                       ? 'الظهر'
-                      : hour < 18
-                        ? 'العصر'
-                        : hour === 18
-                          ? 'المغرب'
-                          : 'المساء';
-            return `الساعة ${arabicDigits(String(spokenHour))}${spokenMinute} ${dayPart}`;
+                      : hour < 15
+                        ? 'بعد الظهر'
+                        : hour < 18
+                          ? 'العصر'
+                          : hour === 18
+                            ? 'المغرب'
+                            : 'المساء';
+            const spokenHourText =
+              spokenHours[spokenHour] ?? arabicDigits(String(spokenHour));
+            return `الساعة ${spokenHourText}${spokenMinute} ${dayPart}`;
           }
           if (hour === 0)
             return minute === '00' ? 'midnight' : `12:${minute} A.M.`;
@@ -1796,10 +1818,17 @@ export function createCheckTutorCalendarTool(
                 timeZone: 'UTC',
               }).format(new Date(`${nearestDate}T12:00:00.000Z`))
             : undefined;
-        const spokenTimes = visibleSlots.map(
-          (slot) =>
-            `من ${spokenPeriod(slot.timeFrom)} إلى ${spokenPeriod(slot.timeTo)}`,
-        );
+        const spokenTimes = visibleSlots.map((slot, index) => {
+          const label =
+            index === 0
+              ? 'أول موعد'
+              : index === 1
+                ? 'والموعد الثاني'
+                : index === 2
+                  ? 'والموعد الثالث'
+                  : 'والموعد الرابع';
+          return `${label}: من ${spokenPeriod(slot.timeFrom)} إلى ${spokenPeriod(slot.timeTo)}`;
+        });
         const moreTimesPrompt =
           nearestDateSlots.length > visibleSlots.length && laterDatesAvailable
             ? 'وفيه مواعيد ثانية بنفس اليوم وبتواريخ لاحقة، إذا ودك أذكرها لك.'
@@ -1818,7 +1847,7 @@ export function createCheckTutorCalendarTool(
             ...(spokenDate
               ? {
                   spokenDate,
-                  spokenSummary: `${tutorName ? `المواعيد المتاحة مع ${tutorName}` : 'المواعيد المتاحة'} يوم ${spokenDate}: ${spokenTimes.join('، ')}.`,
+                  spokenSummary: `${tutorName ? `المواعيد المتاحة مع ${tutorName}` : 'المواعيد المتاحة'} يوم ${spokenDate}: ${spokenTimes.join('. ')}.`,
                   ...(nearestDateSlots.length > visibleSlots.length ||
                   laterDatesAvailable
                     ? { moreTimesPrompt }
