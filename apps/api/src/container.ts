@@ -94,8 +94,8 @@ export function createContainer(config: ApiConfig): Container {
       getMyBootcamps: (accessToken) =>
         customerDirectory.getMyBootcamps(accessToken),
       getMyWallet: (accessToken) => customerDirectory.getMyWallet(accessToken),
-      getMyTutorAvailability: (accessToken) =>
-        customerDirectory.getMyTutorAvailability(accessToken),
+      getMyTutorAvailability: (accessToken, timeZone) =>
+        customerDirectory.getMyTutorAvailability(accessToken, timeZone),
       getSubjects: () => customerDirectory.getSubjects(),
       searchTutorProfiles: (query) =>
         customerDirectory.searchTutorProfiles(query),

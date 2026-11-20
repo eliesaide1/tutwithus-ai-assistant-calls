@@ -415,6 +415,7 @@ export function createGetMyWalletTool(
 export function createGetMyTutorAvailabilityTool(
   getMyTutorAvailability: (
     accessToken: string,
+    timeZone: string,
   ) => Promise<TutorAvailabilityResult>,
 ): RegisteredTool {
   return defineTool({
@@ -450,7 +451,10 @@ export function createGetMyTutorAvailabilityTool(
         };
       }
 
-      const result = await getMyTutorAvailability(context.serverAccessToken);
+      const result = await getMyTutorAvailability(
+        context.serverAccessToken,
+        sessionTimeZone(context),
+      );
       if (result.status === 'unavailable') {
         return {
           output: { status: 'unavailable' },
@@ -1974,6 +1978,7 @@ export type VoiceToolDependencies = {
   getMyWallet?: (accessToken: string) => Promise<WalletResult>;
   getMyTutorAvailability?: (
     accessToken: string,
+    timeZone: string,
   ) => Promise<TutorAvailabilityResult>;
   getSubjects?: () => Promise<SubjectsResult>;
   searchTutorProfiles?: (

@@ -172,8 +172,8 @@ export default defineAgent({
           getMyBootcamps: (accessToken) =>
             directory.getMyBootcamps(accessToken),
           getMyWallet: (accessToken) => directory.getMyWallet(accessToken),
-          getMyTutorAvailability: (accessToken) =>
-            directory.getMyTutorAvailability(accessToken),
+          getMyTutorAvailability: (accessToken, timeZone) =>
+            directory.getMyTutorAvailability(accessToken, timeZone),
           getSubjects: () => directory.getSubjects(),
           searchTutorProfiles: (query) => directory.searchTutorProfiles(query),
           checkSubjectEligibility: (accessToken, subjectId) =>

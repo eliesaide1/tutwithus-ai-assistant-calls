@@ -1526,7 +1526,9 @@ describe('get_my_tutor_availability', () => {
       '{}',
     );
 
-    expect(getAvailability).toHaveBeenCalledWith('server-only-token');
+    // The caller's zone must reach the platform, or the slots come back
+    // rendered in the platform's own server zone.
+    expect(getAvailability).toHaveBeenCalledWith('server-only-token', 'UTC');
     expect(JSON.parse(result.output)).toEqual({
       status: 'available',
       availability: { availability: [{ day: 'Monday', from: '09:00' }] },

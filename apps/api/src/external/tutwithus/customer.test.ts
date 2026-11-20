@@ -734,6 +734,7 @@ describe('TutWithUs external service client', () => {
           timeoutMs: 100,
         },
         'private-token',
+        'Asia/Beirut',
       ),
     ).resolves.toEqual({ status: 'available', data });
     const [url, init] = fetchMock.mock.calls[0]!;
@@ -744,6 +745,9 @@ describe('TutWithUs external service client', () => {
     expect(new Headers(init?.headers).get('authorization')).toBe(
       'Bearer ' + ['private', 'token'].join('-'),
     );
+    // Without this the platform renders the slots in its own server zone and
+    // every time the caller hears is shifted by that offset.
+    expect(new Headers(init?.headers).get('timezone')).toBe('Asia/Beirut');
     vi.unstubAllGlobals();
   });
 
