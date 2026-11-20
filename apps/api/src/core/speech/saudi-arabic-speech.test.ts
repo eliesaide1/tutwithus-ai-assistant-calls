@@ -17,7 +17,7 @@ describe('Saudi Arabic speech guidance', () => {
     };
 
     expect(buildAgentProfile('ar-SA').greeting).toBe(
-      'هلا، أنا المساعد الذكي في Tute With Us. وش أقدر أساعدك فيه؟',
+      'هلا، أنا المساعد الذكي في تيوت وِذ أَس. وش أقدر أساعدك فيه؟',
     );
     expect(buildAgentProfile('ar-SA', settings).greeting).toBe(
       'مرحبًا، أنا المساعد الذكي في TutWithUs.',
@@ -52,6 +52,16 @@ describe('Saudi Arabic speech guidance', () => {
     expect(SAUDI_ARABIC_SPEECH_GUIDE).toContain('اذكر ما أعادته الأداة فقط');
     expect(SAUDI_ARABIC_SPEECH_GUIDE).toContain(
       'استخدم spokenSummary المعاد من check_tutor_calendar كما هو',
+    );
+    expect(SAUDI_ARABIC_SPEECH_GUIDE).toContain(
+      'لا تبطئ بشكل مبالغ فيه ولا تفصل المقاطع',
+    );
+    expect(SAUDI_ARABIC_SPEECH_GUIDE).toContain('لا تكرر «أَس»');
+    expect(SAUDI_ARABIC_SPEECH_GUIDE).toContain(
+      'نتائج الأدوات المعادة مصادر معتمدة',
+    );
+    expect(SAUDI_ARABIC_SPEECH_GUIDE).toContain(
+      'لا تستخدم تحقق البريد إلا إذا طلبه مسار أداة مدرج',
     );
     expect(SAUDI_ARABIC_SPEECH_GUIDE).toContain('لا تستنتج جنس المعلم من اسمه');
     expect(SAUDI_ARABIC_SPEECH_GUIDE).toContain(

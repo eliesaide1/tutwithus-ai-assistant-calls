@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildAgentProfile } from './agent-profile.js';
+import { TUTWITHUS_PRONUNCIATION_RULES } from '../speech/brand-pronunciation.js';
 
 describe('buildAgentProfile caller action policy', () => {
   it.each([
@@ -226,8 +227,16 @@ describe('buildAgentProfile caller action policy', () => {
   });
 
   it.each([
-    ['en', 'call it immediately', 'filter it yourself to the requested period only'],
-    ['fr', 'appelez-le immédiatement', 'filtrez vous-même les disponibilités à la période demandée uniquement'],
+    [
+      'en',
+      'call it immediately',
+      'filter it yourself to the requested period only',
+    ],
+    [
+      'fr',
+      'appelez-le immédiatement',
+      'filtrez vous-même les disponibilités à la période demandée uniquement',
+    ],
     ['ar-SA', 'فاستدعها فورًا', 'رشّح بنفسك المواعيد إلى الفترة المطلوبة فقط'],
   ] as const)(
     'directs tutor availability requests to the verified tool and requested period in %s',
@@ -925,15 +934,14 @@ describe('buildAgentProfile caller action policy', () => {
         escalation: { hoursText: 'Call us later.' },
       });
 
-      expect(instructions).toContain(
-        'Pronunciation rule: whenever you say “TutWithUs”, pronounce it as “Tute With Us” in every language.',
-      );
-      expect(instructions).toContain(
-        '“Tute” must rhyme exactly with “cute” and “mute”.',
-      );
-      expect(instructions).toContain(
-        'Never pronounce it as “Tut With Us” or “tut”',
-      );
+      expect(instructions).toContain(TUTWITHUS_PRONUNCIATION_RULES[locale]);
+      if (locale === 'ar-SA') {
+        expect(instructions).not.toContain('in every language');
+      } else {
+        expect(instructions).toContain(
+          '“Tute” must rhyme exactly with “cute” and “mute”.',
+        );
+      }
     },
   );
 
