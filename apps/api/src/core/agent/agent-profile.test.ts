@@ -35,7 +35,7 @@ describe('buildAgentProfile caller action policy', () => {
           ? 'Speak slightly slower than ordinary conversation'
           : locale === 'fr'
             ? 'parlez légèrement plus lentement'
-            : 'تحدث أبطأ قليلًا',
+            : 'بسرعة طبيعية كالمحادثة اليومية',
       );
     },
   );
