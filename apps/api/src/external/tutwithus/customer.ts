@@ -405,7 +405,7 @@ function subjectMatches(value: string, query: string): boolean {
 }
 
 function canonicalSubjectTitle(value: string): string {
-  return normalizeProfileText(value)
+  const canonical = normalizeProfileText(value)
     .split(' ')
     .filter(
       (token) =>
@@ -415,6 +415,14 @@ function canonicalSubjectTitle(value: string): string {
     )
     .join('')
     .trim();
+  if (
+    /^(?:backendandsoftwaredevelopment|backendandserverdevelopment|backendserverdevelopment|backendsideandserverdevelopment)$/.test(
+      canonical,
+    )
+  ) {
+    return 'backendandserverdevelopment';
+  }
+  return canonical;
 }
 
 function optionalText(value: unknown): string | undefined {

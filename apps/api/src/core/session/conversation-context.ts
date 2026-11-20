@@ -5,6 +5,7 @@ export class ConversationContext {
   tutors: Array<{ id: string; fullName: string }> = [];
   pendingBundleLevel: { subjectName: string; levels: string[] } | undefined;
   bookingStage: BookingStage = 'idle';
+  lastTutorCalendarDate: string | undefined;
 
   rememberSubject(subjectName: string | undefined): void {
     const normalized = subjectName?.trim();
@@ -13,6 +14,12 @@ export class ConversationContext {
 
   rememberTutors(tutors: Array<{ id: string; fullName: string }>): void {
     this.tutors = tutors;
+  }
+
+  rememberTutorCalendarDate(date: string | undefined): void {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(date ?? '')) {
+      this.lastTutorCalendarDate = date;
+    }
   }
 
   requireBundleLevel(subjectName: string, levels: string[]): void {

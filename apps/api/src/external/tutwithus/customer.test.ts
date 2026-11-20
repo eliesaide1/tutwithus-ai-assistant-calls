@@ -118,6 +118,8 @@ describe('TutWithUs external service client', () => {
       'backend and server development',
       'backend and server development course',
       'Back End and Server Development subject',
+      'Backend and software development',
+      'backend server development',
     ]) {
       const exactCourse = await searchTutorProfiles(backend, {
         subjectName: exactTitle,

@@ -144,6 +144,21 @@ function requestsTutorCalendar(value: string): boolean {
   return asksCalendar && !explicitlyNamesCourse;
 }
 
+function requestsLaterTutorDates(value: string): boolean {
+  const normalized = value.normalize('NFKC').toLocaleLowerCase();
+  return (
+    /\b(more|other|next|later)\b.*\b(availability|available times?|calendar|dates?|slots?|times?)\b/u.test(
+      normalized,
+    ) ||
+    /(?:المواعيد|المواقيت|الأوقات|التواريخ).*(?:الأخرى|التانية|الثانية|الثانية|التالية|اللاحقة|الجاي)\b/u.test(
+      normalized,
+    ) ||
+    /(?:مواعيد|مواقيت|أوقات|تواريخ).*(?:تانية|ثانية|أخرى|لاحقة|تالية)\b/u.test(
+      normalized,
+    )
+  );
+}
+
 function requestsTutorProfileSearch(value: string): boolean {
   const normalized = value.normalize('NFKC').toLocaleLowerCase();
   const mentionsTutor =
@@ -477,6 +492,7 @@ export class SessionController {
   private pendingCallerResponse = false;
   private pendingTurnRoute: TurnRoute = { kind: 'none' };
   private readonly conversation = new ConversationContext();
+  private requestNextTutorDates = false;
   private firstCallerResponse = true;
   private readonly processedCallerTranscripts = new Set<string>();
   private readonly activeResponses = new Set<string>();
@@ -892,6 +908,9 @@ export class SessionController {
       }
     }
     const namedCourseAction = requestsNamedCourseAction(transcript);
+    this.requestNextTutorDates =
+      requestsLaterTutorDates(transcript) &&
+      Boolean(this.conversation.lastTutorCalendarDate);
     this.pendingTurnRoute = routeCallerTurn(
       {
         verified: this.customerVerified,
@@ -964,6 +983,30 @@ export class SessionController {
       } catch {
         // Invalid arguments are handled by the tool gateway.
       }
+    }
+    if (name === 'check_tutor_calendar') {
+      try {
+        const args = JSON.parse(text(event.arguments) ?? '{}') as
+          Record<string, unknown> | undefined;
+        if (
+          this.requestNextTutorDates &&
+          args &&
+          typeof args === 'object' &&
+          this.conversation.lastTutorCalendarDate
+        ) {
+          const [year, month, day] = this.conversation.lastTutorCalendarDate
+            .split('-')
+            .map(Number);
+          const nextDate = new Date(Date.UTC(year!, month! - 1, day! + 1))
+            .toISOString()
+            .slice(0, 10);
+          args.fromDate = nextDate;
+          event = { ...event, arguments: JSON.stringify(args) };
+        }
+      } catch {
+        // Invalid arguments are handled by the tool gateway.
+      }
+      this.requestNextTutorDates = false;
     }
     const execution = this.deps.tools.execute(
       {
@@ -1058,6 +1101,7 @@ export class SessionController {
             subjectName?: unknown;
             profiles?: unknown;
             levels?: unknown;
+            date?: unknown;
           }
         | undefined;
       try {
@@ -1066,6 +1110,7 @@ export class SessionController {
           subjectName?: unknown;
           profiles?: unknown;
           levels?: unknown;
+          date?: unknown;
         };
         status =
           typeof parsedOutput.status === 'string'
@@ -1102,6 +1147,12 @@ export class SessionController {
             return [];
           }),
         );
+      }
+      if (
+        result.name === 'check_tutor_calendar' &&
+        typeof parsedOutput?.date === 'string'
+      ) {
+        this.conversation.rememberTutorCalendarDate(parsedOutput.date);
       }
       if (
         result.name === 'recommend_course_bundle' &&

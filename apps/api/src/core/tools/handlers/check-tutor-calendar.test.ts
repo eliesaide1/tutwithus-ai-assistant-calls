@@ -1,5 +1,8 @@
 import { expect, it, vi } from 'vitest';
-import { createCheckTutorCalendarTool } from './voice-tools.js';
+import {
+  createCheckTutorCalendarTool,
+  createPrepareCourseBookingTool,
+} from './voice-tools.js';
 
 const context = {
   sessionId: 'calendar-call',
@@ -105,8 +108,9 @@ it('prepares exact, natural Saudi Arabic availability wording', async () => {
     outcome: {
       output: {
         status: 'available',
+        date: '2026-11-29',
         spokenSummary:
-          'المواعيد المتاحة مع Elie Saide يوم الأحد، ٢٩ نوفمبر: أول موعد: من الساعة أحدعش ونص الصباح إلى الساعة اثنعش الظهر. والموعد الثاني: من الساعة اثنعش الظهر إلى الساعة وحدة بعد الظهر.',
+          'المواعيد المتاحة مع Elie Saide يوم الأحد، ٢٩ نوفمبر: أول موعد: من الساعة أحدعش ونص الصباح إلى الظهر. والموعد الثاني: من الظهر إلى الواحدة بعد الظهر.',
         moreSlotsOnDate: false,
         laterDatesAvailable: false,
       },
@@ -123,4 +127,36 @@ it('prepares exact, natural Saudi Arabic availability wording', async () => {
   expect(JSON.stringify(result)).not.toContain('"timeTo"');
   expect(JSON.stringify(result)).not.toContain('12:00');
   expect(JSON.stringify(result)).not.toContain('13:00');
+});
+
+it('provides canonical spoken ranges for Saudi booking confirmation', async () => {
+  const tool = createPrepareCourseBookingTool();
+
+  for (const [timeFrom, timeTo, spokenRange] of [
+    ['11:30', '12:00', 'من الحادي عشر والنصف الصباح إلى الظهر'],
+    ['12:00', '13:00', 'من الظهر إلى الواحدة بعد الظهر'],
+  ] as const) {
+    const result = await tool.invoke(
+      {
+        levelId: 'level-id',
+        subjectId: 'subject-id',
+        tutorId: 'tutor-id',
+        date: '2026-11-29',
+        timeFrom,
+        timeTo,
+        description: 'Back End and Server Development session with Elie Saide',
+      },
+      { ...context, locale: 'ar-SA' },
+    );
+
+    expect(result).toMatchObject({
+      kind: 'ok',
+      outcome: {
+        output: {
+          status: 'awaiting_confirmation',
+          spokenRange,
+        },
+      },
+    });
+  }
 });
