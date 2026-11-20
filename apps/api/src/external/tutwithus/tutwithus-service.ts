@@ -91,8 +91,13 @@ export class TutWithUsService implements CustomerDirectory {
     return getMyWallet(this.backend, accessToken, this.logger);
   }
 
-  getMyTutorAvailability(accessToken: string) {
-    return getMyTutorAvailability(this.backend, accessToken, this.logger);
+  getMyTutorAvailability(accessToken: string, timeZone: string) {
+    return getMyTutorAvailability(
+      this.backend,
+      accessToken,
+      timeZone,
+      this.logger,
+    );
   }
 
   getBookingLevels() {

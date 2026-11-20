@@ -1446,6 +1446,7 @@ export async function getMyWallet(
 export async function getMyTutorAvailability(
   backend: TutWithUsBackendOptions,
   accessToken: string,
+  timeZone: string,
   logger?: Logger,
 ): Promise<TutorAvailabilityResult> {
   const url = new URL('/tutors/profiles/availabilty', backend.baseUrl);
@@ -1455,7 +1456,13 @@ export async function getMyTutorAvailability(
   try {
     const response = await fetch(url, {
       method: 'GET',
-      headers: { authorization: ['Bearer', accessToken].join(' ') },
+      headers: {
+        authorization: ['Bearer', accessToken].join(' '),
+        // Slots come back rendered in whatever zone the platform settles on.
+        // Without this it falls back to its own server zone and every time
+        // the caller hears is shifted by that offset.
+        TimeZone: timeZone,
+      },
       signal: backend.signal
         ? AbortSignal.any([controller.signal, backend.signal])
         : controller.signal,

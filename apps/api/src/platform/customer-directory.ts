@@ -122,6 +122,7 @@ export interface CustomerDirectory {
   getMyWallet?(accessToken: string): Promise<WalletResult>;
   getMyTutorAvailability?(
     accessToken: string,
+    timeZone: string,
   ): Promise<TutorAvailabilityResult>;
   getSubjects?(): Promise<SubjectsResult>;
   searchTutorProfiles?(query: TutorProfileSearch): Promise<TutorProfilesResult>;
