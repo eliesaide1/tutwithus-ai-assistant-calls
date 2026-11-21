@@ -144,6 +144,22 @@ function requestsTutorCalendar(value: string): boolean {
   return asksCalendar && !explicitlyNamesCourse;
 }
 
+function requestsEstablishedTutorCalendar(
+  value: string,
+  establishedTutorCount: number,
+): boolean {
+  if (establishedTutorCount === 0) return false;
+  const normalized = value.normalize('NFKC').toLocaleLowerCase();
+  return (
+    /(?:التوقيت|التواقيت|المواعيد|المواقيت|الأوقات|اوقات|الوقت).*(?:المتاح|المتاحة|عندو|عندك|إلو|إله|إليه|إلي|إليك|له|لهذا|لهذه)/u.test(
+      normalized,
+    ) ||
+    /(?:شو|ما|ايش|أي|وين)\s*(?:التوقيت|المواعيد|المواقيت|الأوقات).*(?:متاح|متاحة|إلو|إله|إليه|له)/u.test(
+      normalized,
+    )
+  );
+}
+
 function requestsLaterTutorDates(value: string): boolean {
   const normalized = value.normalize('NFKC').toLocaleLowerCase();
   return (
@@ -928,6 +944,10 @@ export class SessionController {
       requestsLaterTutorDates(transcript) ||
       (this.conversation.pendingMoreTutorDates &&
         isTutorDatesAffirmation(transcript));
+    const asksEstablishedTutorCalendar = requestsEstablishedTutorCalendar(
+      transcript,
+      this.conversation.tutors.length,
+    );
     this.requestNextTutorDates =
       asksLaterTutorDates && Boolean(this.conversation.lastTutorCalendarDate);
     this.pendingTurnRoute = routeCallerTurn(
@@ -950,7 +970,9 @@ export class SessionController {
         protectedActionRequested:
           requestsProtectedBookingOrVerification(transcript),
         tutorCalendarRequested:
-          asksLaterTutorDates || requestsTutorCalendar(transcript),
+          asksLaterTutorDates ||
+          asksEstablishedTutorCalendar ||
+          requestsTutorCalendar(transcript),
         tutorProfilesRequested: requestsTutorProfileSearch(transcript),
         namedBookingRequested:
           requestsCourseBooking(transcript) && namedCourseAction,
@@ -1008,6 +1030,17 @@ export class SessionController {
       try {
         const args = JSON.parse(text(event.arguments) ?? '{}') as
           Record<string, unknown> | undefined;
+        if (
+          args &&
+          typeof args === 'object' &&
+          this.conversation.tutors.length === 1
+        ) {
+          const tutor = this.conversation.tutors[0]!;
+          args.tutorId = tutor.id;
+          args.tutorName = tutor.fullName;
+          delete args.tutors;
+          event = { ...event, arguments: JSON.stringify(args) };
+        }
         if (
           this.requestNextTutorDates &&
           args &&

@@ -1134,6 +1134,50 @@ describe('tool calls', () => {
   });
 
   it.each([
+    'شو التوقيت المتاح إلو؟',
+    'شو التوقيت المتاح لإله',
+    'شو التوقيت المتاح إله',
+  ])(
+    'routes timing for an established Saudi tutor to the calendar: %s',
+    async (transcript) => {
+      const t = createHarness(undefined, true, 'student', 'ar-SA', [
+        createCheckTutorCalendarTool(async () => ({
+          status: 'available',
+          slots: [],
+        })),
+      ]);
+      await t.controller.notifyAccountCheck(
+        'verified',
+        'server-token',
+        'student',
+      );
+      await acknowledgeToolUpdate(t.controller, t.sent);
+      await t.controller.handleEvent({
+        type: 'response.created',
+        response: { id: 'verification-notice' },
+      });
+      await t.controller.handleEvent({
+        type: 'response.done',
+        response: { id: 'verification-notice' },
+      });
+      t.sent.length = 0;
+
+      await t.controller.handleEvent({
+        type: 'conversation.item.input_audio_transcription.completed',
+        item_id: 'calendar-request',
+        transcript,
+      });
+
+      const response = t.sent.find((event) => event.type === 'response.create');
+      expect(response?.response?.tool_choice).toEqual({
+        type: 'function',
+        name: 'check_tutor_calendar',
+      });
+      expect(response?.response?.instructions).toContain('FUNCTION-CALL-ONLY');
+    },
+  );
+
+  it.each([
     'المواعيد التاني',
     'بدي أعرف شو في مواعيد تانية',
     'شوف غير الأحد هيدا',

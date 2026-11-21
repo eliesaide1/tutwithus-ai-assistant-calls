@@ -51,7 +51,7 @@ export function createSearchTutorProfilesTool(
       listAll: args.listAll,
       another: args.another,
     }),
-    async execute(args) {
+    async execute(args, context) {
       const query = {
         ...(args.tutorName ? { tutorName: args.tutorName } : {}),
         ...(args.subjectName
@@ -114,7 +114,9 @@ export function createSearchTutorProfilesTool(
           ),
         },
         followUpInstructions: namesOnly
-          ? 'State the returned tutor result naturally. Preserve each fullName exactly as written. If there is one match, say that the returned tutor teaches the requested subject, for example: “Elie Saide teaches Back End and Server Development.” For Arabic, use neutral Saudi phrasing such as “المعلم اللي يدرّس المادة هو Elie Saide. تبغى أشوف لك المواعيد المتاحة؟” Do not paraphrase or translate the fullName or add any other title. If there are multiple matches, say that these are the tutors who teach the requested subject and list every fullName once in returned order, with a brief pause between names. Then ask only whether the caller wants availability for a specific listed tutor. Do not mention matching logic or claim any slot is available.'
+          ? context.locale === 'ar-SA'
+            ? 'Respond only in Saudi Arabic. Preserve each fullName exactly as written and use it unchanged. If there is one match, say: “المعلم اللي يدرّس المادة هو [fullName]. تبغى أشوف لك المواعيد المتاحة؟” Name the exact requested subject naturally only if needed. If there are multiple matches, state the Saudi Arabic introduction and list every fullName once in returned order with brief pauses. Ask only whether the caller wants availability for a specific listed tutor. Never switch to English, paraphrase names, add a title, mention matching logic, or claim a slot is available.'
+            : 'State the returned tutor result naturally. Preserve each fullName exactly as written. If there is one match, say that the returned tutor teaches the requested subject, for example: “Elie Saide teaches Back End and Server Development.” If there are multiple matches, say that these are the tutors who teach the requested subject and list every fullName once in returned order, with a brief pause between names. Then ask whether the caller wants availability for a specific listed tutor. Do not mention matching logic or claim any slot is available.'
           : "Answer only from the returned profile fields and in the caller's language. Say each tutor's fullName exactly as returned so the browser can show the matching picture. Be concise and mention only details relevant to the question. Never read, describe, or mention profilePic or uiTutorProfiles. Do not infer missing facts. If ratingPublished is false, say no rating is published only when the caller asked about rating. Do not claim booking eligibility or an open slot. For a calendar request, pass the returned profile id to check_tutor_calendar when that tool is listed; do not require a course name. Never route tutor availability to bundle recommendation.",
       };
     },
