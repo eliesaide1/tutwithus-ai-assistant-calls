@@ -956,6 +956,172 @@ describe('escalate_to_human', () => {
 });
 
 describe('check_tutor_availability', () => {
+  it('does not save slots from an availability result superseded by caller speech', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-11-13T16:00:00.000Z'));
+    let resolveAvailability!: (result: BookingAvailabilityResult) => void;
+    let markStarted!: () => void;
+    const started = new Promise<void>((resolve) => {
+      markStarted = resolve;
+    });
+    const gateway = new ToolGateway(
+      [
+        createPrepareCourseBookingTool(),
+        createCheckTutorAvailabilityTool({
+          findBookingTutors: async () => ({
+            status: 'available',
+            tutors: [{ id: 'tutor-1', name: 'Taylor Tutor' }],
+          }),
+          getTutorBookingAvailability: async () => {
+            markStarted();
+            return new Promise((resolve) => {
+              resolveAvailability = resolve;
+            });
+          },
+        }),
+      ],
+      { record: async () => undefined },
+      logger,
+    );
+    const call = context(true);
+    const availability = gateway.execute(
+      call,
+      'check_tutor_availability',
+      JSON.stringify({
+        levelId: 'level-1',
+        subjectId: 'subject-1',
+        fromDate: '2026-11-16',
+        toDate: '2026-11-16',
+      }),
+    );
+    await started;
+    gateway.observeCallerTranscript('s1', 'Actually, tomorrow instead.');
+    resolveAvailability({
+      status: 'available',
+      slots: [{ date: '2026-11-16', timeFrom: '10:00', timeTo: '11:00' }],
+    });
+    await availability;
+
+    const prepare = await gateway.execute(
+      call,
+      'prepare_course_booking',
+      JSON.stringify({
+        levelId: 'level-1',
+        subjectId: 'subject-1',
+        tutorId: 'tutor-1',
+        date: '2026-11-16',
+        timeFrom: '10:00',
+        timeTo: '11:00',
+        timeZone: 'UTC',
+      }),
+    );
+    expect(JSON.parse(prepare.output)).toMatchObject({
+      reason: 'BOOKING_CONFIRMATION_REQUIRED',
+    });
+  });
+
+  it('carries forward booking constraints when only the requested date changes', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-11-13T16:00:00.000Z'));
+    const t = createGateway();
+    t.booking.getTutorBookingAvailability.mockImplementation(
+      async (_token, input) => ({
+        status: 'available',
+        slots: [{ date: input.fromDate, timeFrom: '10:00', timeTo: '11:00' }],
+      }),
+    );
+    const call = context(true);
+
+    await t.gateway.execute(
+      call,
+      'check_tutor_availability',
+      JSON.stringify({
+        levelId: 'level-1',
+        subjectId: 'subject-1',
+        tutorPreference: 'specific',
+        tutorId: 'tutor-1',
+        preferredDays: ['Monday'],
+        preferredTimeFrom: '09:00',
+        preferredTimeTo: '12:00',
+        fromDate: '2026-11-16',
+        toDate: '2026-11-16',
+      }),
+    );
+    t.gateway.observeCallerTranscript('s1', 'Actually, next Monday.');
+
+    const result = await t.gateway.execute(
+      call,
+      'check_tutor_availability',
+      JSON.stringify({
+        levelId: 'level-1',
+        subjectId: 'subject-1',
+        fromDate: '2026-11-23',
+        toDate: '2026-11-23',
+      }),
+    );
+
+    expect(JSON.parse(result.output)).toMatchObject({
+      status: 'available',
+      date: '2026-11-23',
+    });
+    expect(t.booking.getTutorBookingAvailability).toHaveBeenNthCalledWith(
+      2,
+      'server-only-token',
+      {
+        tutorId: 'tutor-1',
+        fromDate: '2026-11-23',
+        toDate: '2026-11-23',
+        timeZone: 'UTC',
+      },
+    );
+  });
+
+  it('clears prior day and time filters only when the caller removes them', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-11-13T16:00:00.000Z'));
+    const t = createGateway();
+    t.booking.getTutorBookingAvailability.mockResolvedValue({
+      status: 'available',
+      slots: [{ date: '2026-11-15', timeFrom: '20:00', timeTo: '21:00' }],
+    });
+    const call = context(true);
+
+    await t.gateway.execute(
+      call,
+      'check_tutor_availability',
+      JSON.stringify({
+        levelId: 'level-1',
+        subjectId: 'subject-1',
+        preferredDays: ['Monday'],
+        preferredTimeFrom: '09:00',
+        preferredTimeTo: '12:00',
+        fromDate: '2026-11-15',
+        toDate: '2026-11-15',
+      }),
+    );
+    t.gateway.observeCallerTranscript('s1', 'Any day and any time instead.');
+
+    const result = await t.gateway.execute(
+      call,
+      'check_tutor_availability',
+      JSON.stringify({
+        levelId: 'level-1',
+        subjectId: 'subject-1',
+        preferredDays: null,
+        preferredTimeFrom: null,
+        preferredTimeTo: null,
+        fromDate: '2026-11-15',
+        toDate: '2026-11-15',
+      }),
+    );
+
+    expect(JSON.parse(result.output)).toMatchObject({
+      status: 'available',
+      date: '2026-11-15',
+      slots: [{ timeFrom: '20:00', timeTo: '21:00' }],
+    });
+  });
+
   it('revalidates the tutor selection and returns caller-local slots with a weekday', async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-11-13T16:00:00.000Z'));
@@ -1264,6 +1430,8 @@ describe('book_course', () => {
   };
 
   it('allows one retry only after a definitive stale-slot result', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-11-13T16:00:00.000Z'));
     const createCourse = vi
       .fn()
       .mockResolvedValueOnce({ status: 'slot_unavailable' as const })
@@ -1326,6 +1494,8 @@ describe('book_course', () => {
   });
 
   it('does not retry after an unclear booking result', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-11-13T16:00:00.000Z'));
     const createCourse = vi
       .fn()
       .mockResolvedValue({ status: 'unknown' as const });

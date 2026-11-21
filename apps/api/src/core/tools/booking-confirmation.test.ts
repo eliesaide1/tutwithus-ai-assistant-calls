@@ -20,6 +20,25 @@ function setup() {
   });
   return guard;
 }
+function setupWithMultipleSlots() {
+  const guard = new BookingConfirmation();
+  const second = {
+    ...args,
+    date: '2026-12-02',
+    timeFrom: '11:00',
+    timeTo: '12:00',
+  };
+  guard.remember('call', args, {
+    status: 'available',
+    subjectName: 'Backend',
+    subjectId: args.subjectId,
+    levelId: args.levelId,
+    tutor: { id: args.tutorId, name: 'Taylor Tutor' },
+    timeZone: args.timeZone,
+    slots: [args, second],
+  });
+  return { guard, second };
+}
 afterEach(() => vi.useRealTimers());
 describe('booking confirmation boundary', () => {
   it('requires an offered slot, preparation and a new caller confirmation', () => {
@@ -66,6 +85,26 @@ describe('booking confirmation boundary', () => {
       selection: args,
     });
   });
+  it.each([
+    ['the second one', 'second'],
+    ['I want the first one', 'first'],
+    ['je prends le deuxième', 'second'],
+    ['أبي الثاني', 'second'],
+  ])(
+    'resolves an explicit %s reference to the offered slot',
+    (transcript, choice) => {
+      const { guard, second } = setupWithMultipleSlots();
+      guard.observe('call', transcript);
+
+      expect(guard.prepare('call', args)).toBe(
+        'Backend session with Taylor Tutor',
+      );
+      guard.observe('call', 'yes');
+      expect(guard.consumePrepared('call', args)?.selection).toEqual(
+        choice === 'second' ? second : args,
+      );
+    },
+  );
   it('uses the subject-and-tutor default when the caller has no note', () => {
     const guard = setup();
     expect(guard.prepare('call', args)).toBe(
@@ -109,5 +148,67 @@ describe('booking confirmation boundary', () => {
     guard.observe('call', 'yes');
     vi.advanceTimersByTime(300_001);
     expect(guard.consume('call', args)).toBe(undefined);
+  });
+  it('retains omitted availability preferences and clears an explicit null', () => {
+    const guard = new BookingConfirmation();
+    const preferences = {
+      subjectId: 's',
+      levelId: 'l',
+      preferredDays: ['Monday'],
+      preferredTimeFrom: '09:00',
+      preferredTimeTo: '12:00',
+      fromDate: '2026-12-01',
+      toDate: '2026-12-02',
+    };
+    guard.remember('call', preferences, {
+      status: 'available',
+      tutor: { id: 't', name: 'Taylor Tutor' },
+      timeZone: 'Asia/Beirut',
+      slots: [args],
+    });
+
+    expect(
+      guard.mergeAvailabilityPreferences('call', {
+        fromDate: '2026-12-03',
+        preferredDays: null,
+      }),
+    ).toMatchObject({
+      subjectId: 's',
+      levelId: 'l',
+      fromDate: '2026-12-03',
+      toDate: '2026-12-02',
+      preferredDays: null,
+      preferredTimeFrom: '09:00',
+      preferredTimeTo: '12:00',
+    });
+    guard.remember(
+      'call',
+      { preferredDays: null },
+      { status: 'no_matching_slots' },
+      guard.revision('call'),
+    );
+    expect(guard.mergeAvailabilityPreferences('call', {})).not.toHaveProperty(
+      'preferredDays',
+    );
+  });
+  it('does not save offers from a lookup superseded by a caller turn', () => {
+    const guard = new BookingConfirmation();
+    const revision = guard.revision('call');
+    guard.observe('call', 'Actually, tomorrow instead.');
+
+    guard.remember(
+      'call',
+      args,
+      {
+        status: 'available',
+        subjectName: 'Backend',
+        tutor: { id: 't', name: 'Taylor Tutor' },
+        timeZone: args.timeZone,
+        slots: [args],
+      },
+      revision,
+    );
+
+    expect(guard.prepare('call', args)).toBe(undefined);
   });
 });

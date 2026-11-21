@@ -87,30 +87,40 @@ describe('buildAgentProfile caller action policy', () => {
   it.each([
     [
       'en',
-      'one to three Arabic words',
-      'at least four consecutive, recognizable Arabic words',
-      'Never speak Arabic through the English OpenAI voice',
+      'A short but clear phrase is enough to switch',
+      'do not require a minimum word count',
+      'preserve all conversation and booking context when the language changes',
+      'Conversation continuity rule',
     ],
     [
       'fr',
-      'd’un à trois mots arabes',
-      'au moins quatre mots arabes consécutifs et reconnaissables',
-      'Ne parlez jamais arabe avec la voix OpenAI française',
+      'Une phrase courte mais claire suffit pour changer de langue',
+      'n’imposez pas un nombre minimal de mots',
+      'Conservez la voix configurée ainsi que tout le contexte de la conversation et de la réservation',
+      'Règle de continuité',
     ],
     [
       'ar-SA',
-      'كلمة إلى ثلاث كلمات بلغة أخرى',
-      'أربع كلمات متتالية وواضحة بتلك اللغة',
-      'صوت OpenAI المحدد للمكالمة وبلهجة سعودية واضحة',
+      'تكفي عبارة قصيرة وواضحة لتغيير اللغة',
+      'لا تشترط عددًا أدنى من الكلمات',
+      'احتفظ بسياق المحادثة والحجز عند تبديل اللغة',
+      'قاعدة استمرار سياق المحادثة',
     ],
   ] as const)(
-    'requires clear language-change evidence and preserves Arabic voice routing in %s',
-    (locale, shortFragmentRule, clearChangeRule, voiceRoutingRule) => {
+    'supports clear mid-call language switches while preserving context in %s',
+    (
+      locale,
+      shortSwitchRule,
+      noWordThresholdRule,
+      contextRule,
+      continuityHeading,
+    ) => {
       const { instructions } = buildAgentProfile(locale);
 
-      expect(instructions).toContain(shortFragmentRule);
-      expect(instructions).toContain(clearChangeRule);
-      expect(instructions).toContain(voiceRoutingRule);
+      expect(instructions).toContain(shortSwitchRule);
+      expect(instructions).toContain(noWordThresholdRule);
+      expect(instructions).toContain(contextRule);
+      expect(instructions).toContain(continuityHeading);
     },
   );
 

@@ -639,26 +639,29 @@ const CheckTutorAvailabilityArgumentsSchema = z
   .object({
     levelId: BookingIdSchema,
     subjectId: BookingIdSchema,
-    tutorPreference: z.enum(['specific', 'nearest']).optional(),
-    tutorId: BookingIdSchema.optional(),
+    tutorPreference: z.enum(['specific', 'nearest']).nullable().optional(),
+    tutorId: BookingIdSchema.nullable().optional(),
     preferredDays: z
       .array(z.enum(AVAILABILITY_WEEKDAYS))
       .min(1)
       .max(AVAILABILITY_WEEKDAYS.length)
       .refine((days) => new Set(days).size === days.length)
+      .nullable()
       .optional(),
     // Accepted for compatibility. Server-owned session context overrides it.
     timeZone: z.string().trim().min(1).max(64).optional(),
     searchFromDate: z.iso.date().optional(),
-    fromDate: z.iso.date().optional(),
-    toDate: z.iso.date().optional(),
+    fromDate: z.iso.date().nullable().optional(),
+    toDate: z.iso.date().nullable().optional(),
     preferredTimeFrom: z
       .string()
       .regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/)
+      .nullable()
       .optional(),
     preferredTimeTo: z
       .string()
       .regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/)
+      .nullable()
       .optional(),
     curriculum: z
       .string()
@@ -725,14 +728,17 @@ const StartCourseBookingArgumentsSchema = z
       .array(z.enum(AVAILABILITY_WEEKDAYS))
       .min(1)
       .max(AVAILABILITY_WEEKDAYS.length)
+      .nullable()
       .optional(),
     preferredTimeFrom: z
       .string()
       .regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/)
+      .nullable()
       .optional(),
     preferredTimeTo: z
       .string()
       .regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/)
+      .nullable()
       .optional(),
   })
   .strict();
@@ -1053,7 +1059,7 @@ export function createCheckTutorAvailabilityTool(dependencies: {
     name: 'check_tutor_availability',
     access: { kind: 'roles', roles: STUDENT_AND_PARENT_ROLES },
     description:
-      'Only a verified, registered customer with the student or parent role can use this tool. Call it immediately when the caller asks for the nearest, earliest, whenever, anyone, any weekday, any day, or any time. Interpret “any weekday” as Monday through Friday only; interpret “any day” as all seven days. If no weekday slots match, report the exact searched weekday/date range and ask before including weekends. Tutor preference is optional and defaults to nearest across all returned tutors. Preferred days are optional and default to all seven only when the caller gave no day constraint. A time window is optional; without one, search every returned time. Never require a time window, country, city, region, country code, or time zone. Pass the exact subject and level ids and only preferences the caller actually provided. Search in sequential 14-day date windows beginning at least 48 hours after the call; compare all listed tutors in the same window for the nearest option. When a slot is returned, state its exact calendar date, weekday, and time exactly as supplied; do not calculate or substitute a date. If the search is incomplete, say it is incomplete, never that no slots exist, and resume at the returned nextSearchDate when the caller wants to continue with unchanged preferences. Reset the search when an explicit tutor, date, weekday, or time preference changes. Search at most 90 days ahead. Only offer returned slots.',
+      'Only a verified, registered customer with the student or parent role can use this tool. Call it immediately when the caller asks for the nearest, earliest, whenever, anyone, any weekday, any day, or any time. Interpret “any weekday” as Monday through Friday only; interpret “any day” as all seven days. If no weekday slots match, report the exact searched weekday/date range and ask before including weekends. Tutor preference is optional and defaults to nearest across all returned tutors. Preferred days are optional and default to all seven only when the caller gave no day constraint. A time window is optional; without one, search every returned time. Never require a time window, country, city, region, country code, or time zone. Preserve prior subject, tutor, date, weekday, and time constraints across follow-ups unless the caller changes them. Omit a field to retain its previous value; pass null when the caller explicitly removes that preference. Pass exact subject and level ids. Search in sequential 14-day date windows beginning at least 48 hours after the call; compare all listed tutors in the same window for the nearest option. When a slot is returned, state its exact calendar date, weekday, and time exactly as supplied; do not calculate or substitute a date. If the search is incomplete, say it is incomplete, never that no slots exist, and resume at the returned nextSearchDate when the caller wants to continue with unchanged preferences. Reset the search when an explicit tutor, date, weekday, or time preference changes. Search at most 90 days ahead. Only offer returned slots.',
     parameters: CheckTutorAvailabilityArgumentsSchema,
     maxCallsPerSession: BOOKING_LOOKUPS_PER_SESSION,
     requiresVerifiedCustomer: true,
@@ -1465,7 +1471,7 @@ export function createStartCourseBookingTool(
     requiresVerifiedCustomer: true,
     maxCallsPerSession: BOOKING_LOOKUPS_PER_SESSION,
     description:
-      'Start a booking for one named course in one call. It checks wallet eligibility, resolves the subject and level, finds booking tutors, and returns the nearest available date and slots. Use this instead of calling check_subject_eligibility, find_booking_tutors, and check_tutor_availability separately when the caller explicitly asks to book. Pass only preferences the caller already gave.',
+      'Start a booking for one named course in one call. It checks wallet eligibility, resolves the subject and level, finds booking tutors, and returns the nearest available date and slots. Use this instead of calling check_subject_eligibility, find_booking_tutors, and check_tutor_availability separately when the caller explicitly asks to book. Preserve prior weekday and time constraints on follow-ups unless changed; pass null when the caller explicitly removes one.',
     parameters: StartCourseBookingArgumentsSchema,
     redact: () => ({ bookingLookupRequested: true }),
     async execute(args, context) {

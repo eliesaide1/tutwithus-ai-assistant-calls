@@ -424,7 +424,21 @@ export class ToolGateway {
         description,
       };
     }
+    if (
+      name === 'check_tutor_availability' &&
+      typeof toolArguments === 'object' &&
+      toolArguments !== null &&
+      !Array.isArray(toolArguments)
+    ) {
+      toolArguments = this.bookingConfirmation.mergeAvailabilityPreferences(
+        call.context.sessionId,
+        toolArguments as Record<string, unknown>,
+      );
+    }
     call.callCounts.set(name, callsMade + 1);
+    const bookingRevision = this.bookingConfirmation.revision(
+      call.context.sessionId,
+    );
     try {
       const result = await tool.invoke(toolArguments, {
         ...call.context,
@@ -452,8 +466,9 @@ export class ToolGateway {
       ) {
         this.bookingConfirmation.remember(
           call.context.sessionId,
-          parsedJson as Record<string, unknown>,
+          toolArguments as Record<string, unknown>,
           outcome.output,
+          bookingRevision,
         );
       }
       if (

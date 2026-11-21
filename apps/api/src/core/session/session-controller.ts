@@ -1152,6 +1152,8 @@ export class SessionController {
     if (this.stopped || this.ending) {
       return;
     }
+    const currentTurn =
+      epoch === this.turnEpoch && status !== 'cancelled' && status !== 'failed';
     for (const result of results) {
       let status: string | undefined;
       let parsedOutput:
@@ -1181,12 +1183,14 @@ export class SessionController {
         status = undefined;
       }
       if (
+        currentTurn &&
         result.name === 'check_subject_eligibility' &&
         typeof parsedOutput?.subjectName === 'string'
       ) {
         this.conversation.rememberSubject(parsedOutput.subjectName);
       }
       if (
+        currentTurn &&
         result.name === 'search_tutor_profiles' &&
         Array.isArray(parsedOutput?.profiles)
       ) {
@@ -1210,6 +1214,7 @@ export class SessionController {
         );
       }
       if (
+        currentTurn &&
         result.name === 'check_tutor_calendar' &&
         typeof parsedOutput?.date === 'string'
       ) {
@@ -1219,6 +1224,7 @@ export class SessionController {
           parsedOutput.laterDatesAvailable === true;
       }
       if (
+        currentTurn &&
         result.name === 'recommend_course_bundle' &&
         status === 'level_required' &&
         typeof parsedOutput?.subjectName === 'string' &&
@@ -1230,14 +1236,21 @@ export class SessionController {
         );
         this.conversation.requireBundleLevel(parsedOutput.subjectName, levels);
       } else if (
+        currentTurn &&
         result.name === 'recommend_course_bundle' &&
         status === 'bundle_options'
       ) {
         this.conversation.clearBundleLevel();
       }
-      if (result.name === 'start_course_booking' && status === 'available') {
+      if (
+        currentTurn &&
+        (result.name === 'start_course_booking' ||
+          result.name === 'check_tutor_availability') &&
+        status === 'available'
+      ) {
         this.conversation.bookingStage = 'slots_offered';
       } else if (
+        currentTurn &&
         result.name === 'prepare_course_booking' &&
         status === 'awaiting_confirmation'
       ) {
@@ -1256,8 +1269,6 @@ export class SessionController {
       }
     }
     this.updateAvailableTools();
-    const currentTurn =
-      epoch === this.turnEpoch && status !== 'cancelled' && status !== 'failed';
     if (currentTurn && results.some((result) => result.endCall)) {
       // The model says goodbye in the same turn it calls end_call, so there is
       // nothing left to ask it. Wait for the goodbye to finish playing.
@@ -1521,7 +1532,7 @@ export class SessionController {
             instructions: [
               callerTurnPriorityInstructions(this.deps.toolContext.locale),
               "Start directly with the useful result. Call fast catalog, tutor-directory, account, and action tools silently, without acknowledgment or progress narration. Live tutor-calendar and eligibility lookups must use exactly one brief, request-specific waiting sentence before their tool call. Only search_knowledge may use its own required single question-specific waiting sentence. Never praise or assess the caller's question and never say 'Nice question,' 'Great question,' 'Great choice,' 'Awesome,' 'Amazing,' 'Perfect,' 'Let me think,' 'I’ll check that for you,' or similar filler. For a tutor request about any subject, field, or broad topic, call search_tutor_profiles with the caller's complete topic phrase in subjectName; never omit the filter or interpret an unfiltered sample of profiles yourself. Give one result and at most one necessary next question; never end with a generic offer of help.",
-              "Keep the call's current language unless the caller explicitly requests another language or speaks at least four consecutive recognizable words in it. For an unclear or shorter foreign-language fragment, stay in the current language and ask once for repetition; never invent an intent or switch languages.",
+              'Respond in the caller’s clearly used current language, including after a short, clear language switch. Preserve conversation and booking context when the language changes; do not switch because of a name, borrowed term, or background speech. If the language or intent is genuinely unclear, ask one brief clarification instead of guessing.',
               "Resolve 'this course', 'that course', 'these courses', 'this subject', 'that subject', 'it', and equivalent references to the most recently established exact course or subject in the conversation. For example, after listing Math tutors, 'Am I eligible to take these courses?' means the Math subject, and a later bundle request still means Math. Do not ask for the course name again when that reference is unambiguous. If the caller is verified and check_subject_eligibility is listed, call it silently. If this browser call is unverified, use the browser account-details instruction exactly and never ask for a member ID during the call.",
               'After check_subject_eligibility returns not_eligible or no_credits, that eligibility check is complete. Never say it still needs verification and never read unrelated wallet bundles. If the caller asks which bundles cover the same subject, keep that subject and use recommend_course_bundle when listed; do not restart with get_subjects or ask for the subject again. Present all returned matching bundles as neutral choices and never recommend or rank one.',
               "Treat the word 'methods' literally. Never reinterpret it as 'Math' unless the caller also says tutor, course, subject, or mathematics; ask one short clarification question when the request is ambiguous.",

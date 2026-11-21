@@ -302,6 +302,58 @@ describe('startup', () => {
 });
 
 describe('tool calls', () => {
+  it('unlocks booking preparation after availability returns slots', async () => {
+    const availability = defineTool({
+      name: 'check_tutor_availability',
+      description: 'Check current availability.',
+      access: { kind: 'public' },
+      parameters: z.object({}),
+      maxCallsPerSession: 1,
+      async execute() {
+        return { output: { status: 'available' } };
+      },
+    });
+    const prepare = defineTool({
+      name: 'prepare_course_booking',
+      description: 'Prepare a confirmed booking.',
+      access: { kind: 'public' },
+      parameters: z.object({}),
+      maxCallsPerSession: 1,
+      async execute() {
+        return { output: { status: 'awaiting_confirmation' } };
+      },
+    });
+    const book = defineTool({
+      name: 'book_course',
+      description: 'Book a confirmed course.',
+      access: { kind: 'public' },
+      parameters: z.object({}),
+      maxCallsPerSession: 1,
+      async execute() {
+        return { output: { status: 'booked' } };
+      },
+    });
+    const t = createHarness(undefined, false, 'student', 'en', [
+      availability,
+      prepare,
+      book,
+    ]);
+
+    await toolTurn(
+      t.controller,
+      'availability-result',
+      'check_tutor_availability',
+      {},
+    );
+
+    const update = [...t.sent]
+      .reverse()
+      .find((event) => event.type === 'session.update');
+    expect(update?.session?.tools?.map((tool) => tool.name)).toContain(
+      'prepare_course_booking',
+    );
+  });
+
   it('refreshes and prepares upcoming sessions when the caller asks to cancel', async () => {
     const t = createHarness(undefined, true, 'student', 'en', [
       createGetMyCoursesTool(async () => ({
