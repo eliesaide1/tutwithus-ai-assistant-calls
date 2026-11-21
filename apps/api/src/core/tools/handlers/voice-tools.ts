@@ -778,7 +778,7 @@ function spokenSaudiTime(time: string): string {
     hour < 5
       ? 'بالليل'
       : hour < 12
-        ? 'الصباح'
+        ? 'الصبح'
         : hour < 15
           ? 'بعد الظهر'
           : hour < 18
@@ -1331,7 +1331,7 @@ export function createCheckTutorAvailabilityTool(dependencies: {
               en: 'A slot exists. State the selected tutor, exact returned calendar date, weekday, and every returned slot in chronological order. Preserve each exact HH:mm value internally for selection and tool arguments, but speak it naturally on a 12-hour clock: for example, 09:00 is nine A.M. and 21:00 is nine P.M., never twenty-one P.M. Speak slightly slowly and pause between slots. Never say there are no matching slots for this result; do not calculate or substitute a date or time. If the caller wants to book, ask which exact slot they choose, then whether they want to add a note or focus for the session. If they say no or have nothing specific, omit description; the server will use "<subject name> session with <tutor name>". Call prepare_course_booking and read its summary before requesting final confirmation. Do not speak any internal ID, end the conversation, or claim a booking.',
               fr: 'Un créneau existe. Indiquez le tuteur, la date, le jour et chaque créneau dans l’ordre chronologique. Conservez chaque valeur HH:mm exacte pour la sélection et les outils, mais prononcez-la naturellement : par exemple, 09:00 est neuf heures du matin et 21:00 neuf heures du soir. Parlez un peu lentement et marquez une pause entre les créneaux. Si la personne souhaite réserver, demandez quel créneau elle choisit, puis si elle souhaite ajouter une note ou un objectif à la séance. Si elle répond non ou n’a rien de particulier, omettez description ; le serveur utilisera "<nom du cours> session with <nom du tuteur>". Appelez prepare_course_booking et lisez son récapitulatif avant de demander la confirmation finale. Ne prononcez aucun identifiant interne et ne prétendez pas que la réservation est faite.',
               'ar-SA':
-                'يوجد موعد متاح. اذكر المعلم والتاريخ واسم اليوم، ثم اقرأ المواعيد بالترتيب الزمني. استخدم فقط حقل spokenRange داخل كل موعد؛ لا تنطق قيم HH:mm ولا تعِد صياغة الأوقات. اقرأ 11:30 كنقطة «الحادي عشر والنصف الصباح»، واقرأ 12:00 «اثنعش الظهر»، واقرأ 13:00 «الواحدة بعد الظهر». توقف بين المواعيد. إذا أراد المتصل الحجز، فاسأله عن الموعد الذي يختاره، ثم اسأله إن كان يريد إضافة ملاحظة أو هدف للجلسة. إذا قال لا أو ليس لديه شيء محدد، فلا ترسل description؛ سيستخدم الخادم "<اسم المادة> session with <اسم المعلم>". استدعِ prepare_course_booking واقرأ ملخصه قبل طلب التأكيد النهائي. لا تنطق أي معرّف داخلي ولا تدّعِ إتمام الحجز.',
+                'يوجد موعد متاح. اذكر المعلم والتاريخ واسم اليوم، ثم اقرأ المواعيد بالترتيب الزمني. استخدم فقط حقل spokenRange داخل كل موعد؛ لا تنطق قيم HH:mm ولا تعِد صياغة الأوقات. اقرأ 11:30 «الحادي عشر والنصف الصبح»، و12:00 «اثنعش الظهر»، و13:00 «الواحدة بعد الظهر». توقف بين المواعيد. إذا أراد المتصل الحجز، فاسأله عن الموعد الذي يختاره، ثم اسأله إن كان يريد إضافة ملاحظة أو هدف للجلسة. إذا قال لا أو ليس لديه شيء محدد، فلا ترسل description؛ سيستخدم الخادم "<اسم المادة> session with <اسم المعلم>". استدعِ prepare_course_booking واقرأ ملخصه قبل طلب التأكيد النهائي. لا تنطق أي معرّف داخلي ولا تدّعِ إتمام الحجز.',
             }[context.locale],
           };
         }
@@ -1395,7 +1395,7 @@ export function createBookCourseTool(
             en: 'The booking is confirmed. Briefly tell the caller the subject, tutor, date, and time. Preserve the exact HH:mm values internally, but pronounce the time naturally on a 12-hour clock with A.M. or P.M. Do not mention internal IDs, backend endpoints, or implementation details.',
             fr: 'La réservation est confirmée. Indiquez brièvement la matière, le tuteur, la date et l’heure en prononçant naturellement l’heure plutôt qu’en lisant le format 24 heures brut. Ne mentionnez aucun identifiant interne ni détail technique.',
             'ar-SA':
-              'تم تأكيد الحجز. اذكر المادة والمعلم والتاريخ والوقت باختصار. استخدم الصياغة العربية فقط: 11:30 «الحادي عشر والنصف الصباح»، 12:00 «اثنعش الظهر»، و13:00 «الواحدة بعد الظهر». لا تنطق HH:mm الخام ولا تذكر أي معرّف داخلي أو تفاصيل تقنية.',
+              'تم تأكيد الحجز. اذكر المادة والمعلم والتاريخ والوقت باختصار. استخدم الصياغة العربية فقط: 11:30 «الحادي عشر والنصف الصبح»، 12:00 «اثنعش الظهر»، و13:00 «الواحدة بعد الظهر». لا تنطق HH:mm الخام ولا تذكر أي معرّف داخلي أو تفاصيل تقنية.',
           }[context.locale],
         };
       }
@@ -1546,7 +1546,7 @@ export function createStartCourseBookingTool(
         followUpInstructions:
           availabilityRecord.status === 'available'
             ? context.locale === 'ar-SA'
-              ? 'بإيجاز، قل إن المتصل مؤهل، واذكر المعلم والتاريخ، ثم اقرأ كل عنصر في slots باستخدام spokenRange فقط وبالترتيب الزمني. اقرأ 11:30 «الحادي عشر والنصف الصباح»، و12:00 «اثنعش الظهر»، و13:00 «الواحدة بعد الظهر». لا تنطق HH:mm الخام أو تشير إلى أرقام 24 ساعة. توقف قليلاً بين المواعيد واسأل المتصل أي موعد يختار. لا تذكر الباقات أو الأرصدة أو المستويات أو المعرفات الداخلية أو الخطوات الوسيطة، ولا تطلب وصف الجلسة قبل اختيار الموعد.'
+              ? 'بإيجاز، قل إن المتصل مؤهل، واذكر المعلم والتاريخ، ثم اقرأ كل عنصر في slots باستخدام spokenRange فقط وبالترتيب الزمني. اقرأ 11:30 «الحادي عشر والنصف الصبح»، و12:00 «اثنعش الظهر»، و13:00 «الواحدة بعد الظهر». لا تنطق HH:mm الخام أو تشير إلى أرقام 24 ساعة. توقف قليلاً بين المواعيد واسأل المتصل أي موعد يختار. لا تذكر الباقات أو الأرصدة أو المستويات أو المعرفات الداخلية أو الخطوات الوسيطة، ولا تطلب وصف الجلسة قبل اختيار الموعد.'
               : 'In one concise response, say the caller is eligible, name the selected tutor, and list the returned date and slots in chronological order. Preserve the exact 24-hour HH:mm values internally, but pronounce each slot naturally on a 12-hour clock with A.M. or P.M.; 09:00 is nine A.M. and 21:00 is nine P.M. Speak slightly slowly and pause between slots. Ask which slot they want. Do not mention bundles, credits, levels, internal IDs, tools, or intermediate checks. Do not ask for the session description until after they select a slot.'
             : invoked.outcome.followUpInstructions,
       };
@@ -1579,7 +1579,7 @@ export function createPrepareCourseBookingTool(): RegisteredTool {
         },
         followUpInstructions:
           context.locale === 'ar-SA'
-            ? 'Give one concise Arabic confirmation summary using the course and tutor names already established plus the returned date, spokenRange, time zone, and exact description returned here. Use the Saudi spokenRange verbatim: 11:30 is «الحادي عشر والنصف الصباح», 12:00 is «اثنعش الظهر», and 13:00 is «الواحدة بعد الظهر». Never read raw HH:mm values or convert them to 24-hour numbers. Pause before the confirmation question. Never mention an ID. Ask exactly once whether they want to confirm this booking, then stop and wait. Only after a new explicit yes may you call book_course immediately with the identical selection.'
+            ? 'Give one concise Arabic confirmation summary using the course and tutor names already established plus the returned date, spokenRange, time zone, and exact description returned here. Use the Saudi spokenRange verbatim: 11:30 is «الحادي عشر والنصف الصبح», 12:00 is «اثنعش الظهر», and 13:00 is «الواحدة بعد الظهر». Never read raw HH:mm values or convert them to 24-hour numbers. Pause before the confirmation question. Never mention an ID. Ask exactly once whether they want to confirm this booking, then stop and wait. Only after a new explicit yes may you call book_course immediately with the identical selection.'
             : 'Give one concise confirmation summary using the course and tutor names already established plus the returned date, start/end time, time zone, and exact description returned here. Preserve the returned HH:mm values for the later tool call, but pronounce the time range naturally on a 12-hour clock with A.M. or P.M.; never say a 24-hour number followed by A.M. or P.M. Speak slightly slowly and pause before the confirmation question. Never mention, partially reveal, spell, or describe any ID. Ask exactly once whether they want to confirm this booking, then stop and wait. Only after a new explicit yes may you call book_course immediately with the identical selection. Do not prepare again, ask for a second confirmation, or claim success before the booking tool confirms it.',
       };
     },
@@ -1860,7 +1860,7 @@ export function createCheckTutorCalendarTool(
                 : hour < 5
                   ? 'بالليل'
                   : hour < 12
-                    ? 'الصباح'
+                    ? 'الصبح'
                     : hour === 12
                       ? 'الظهر'
                       : hour < 15
@@ -1872,7 +1872,7 @@ export function createCheckTutorCalendarTool(
                             : 'المساء';
             const spokenHourText =
               spokenHours[spokenHour] ?? arabicDigits(String(spokenHour));
-            return `الساعة ${spokenHourText}${spokenMinute} ${dayPart}`;
+            return `${spokenHourText}${spokenMinute} ${dayPart}`;
           }
           if (hour === 0)
             return minute === '00' ? 'midnight' : `12:${minute} A.M.`;
@@ -1900,7 +1900,7 @@ export function createCheckTutorCalendarTool(
                 : index === 2
                   ? 'والموعد الثالث'
                   : 'والموعد الرابع';
-          return `${label}: من ${spokenPeriod(slot.timeFrom)} إلى ${spokenPeriod(slot.timeTo)}`;
+          return `${label}: من الساعة ${spokenPeriod(slot.timeFrom)} إلى الساعة ${spokenPeriod(slot.timeTo)}`;
         });
         const moreTimesPrompt =
           nearestDateSlots.length > visibleSlots.length && laterDatesAvailable
@@ -1910,6 +1910,9 @@ export function createCheckTutorCalendarTool(
               : 'وفيه مواعيد بتواريخ ثانية، إذا ودك أذكرها لك.';
         const moreSlotsOnDate = nearestDateSlots.length > visibleSlots.length;
         const spokenSummary = `${tutorName ? `المواعيد المتاحة مع ${tutorName}` : 'المواعيد المتاحة'} يوم ${spokenDate}: ${spokenTimes.join('. ')}.`;
+        const spokenReply = `${spokenSummary}${
+          moreSlotsOnDate || laterDatesAvailable ? ` ${moreTimesPrompt}` : ''
+        }`;
         const output =
           context.locale === 'ar-SA'
             ? {
@@ -1940,7 +1943,7 @@ export function createCheckTutorCalendarTool(
           output,
           followUpInstructions:
             context.locale === 'ar-SA'
-              ? 'Speak only the returned spokenSummary verbatim; it is the sole source for the tutor name, date, and times. Do not convert, reorder, reinterpret, or restate its times. If moreSlotsOnDate or laterDatesAvailable is true, add the returned moreTimesPrompt exactly once. Do not add a greeting, filler, another offer, or a booking claim.'
+              ? `قل النص الموجود بين علامتي الاقتباس حرفيًا من أول كلمة لآخر كلمة. لا تغيّر أو تحذف أو تضف أي كلمة أو رقم، ولا تنطق علامتي الاقتباس أو أي تعليمات:\n«${spokenReply}»`
               : 'State tutorName when returned; otherwise use the single tutor name already established. State the single returned date and each returned spokenTime exactly as written. Keep the result to at most two short sentences. If moreSlotsOnDate or laterDatesAvailable is true, ask only whether the caller wants more times. Do not read raw 24-hour values, calculate time conversions, self-correct aloud, ask for a course, mention eligibility, recommend a bundle, claim a booking, or read any tutor id.',
         };
       }

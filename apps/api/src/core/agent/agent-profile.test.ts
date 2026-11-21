@@ -18,7 +18,7 @@ describe('buildAgentProfile caller action policy', () => {
     ],
     [
       'ar-SA',
-      '09:00 هي «التاسعة صباحًا»',
+      '09:00 هي «التاسعة الصبح»',
       '21:00 «التاسعة مساءً»',
       'احتفظ بقيم HH:mm الأصلية',
     ],
@@ -39,6 +39,20 @@ describe('buildAgentProfile caller action policy', () => {
       );
     },
   );
+
+  it('requires exact Saudi Arabic availability wording and spoken time values', () => {
+    const { instructions } = buildAgentProfile('ar-SA');
+
+    expect(instructions).toContain(
+      'بعد نتيجة check_tutor_calendar، انطق النص الذي تضعه تعليمات الأداة حرفيًا كلمة بكلمة',
+    );
+    expect(instructions).toContain('انطق 11:30 «أحدعش ونص الصبح»');
+    expect(instructions).toContain('قل «الساعة» قبل بداية كل وقت ونهايته');
+    expect(instructions).toContain(
+      'راجع بصمت الوقت الأصلي المعاد من الأداة والعبارة المنطوقة',
+    );
+    expect(instructions).toContain('لا تنطق مراجعتك أو تفكيرك بصوت عالٍ');
+  });
 
   it.each([
     [

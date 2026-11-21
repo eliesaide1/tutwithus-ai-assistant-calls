@@ -102,6 +102,8 @@ it('prepares exact, natural Saudi Arabic availability wording', async () => {
     { tutorId: 'elie-id', tutorName: 'Elie Saide' },
     { ...context, locale: 'ar-SA' },
   );
+  const expectedSummary =
+    'المواعيد المتاحة مع Elie Saide يوم الأحد، ٢٩ نوفمبر: أول موعد: من الساعة أحدعش ونص الصبح إلى الساعة اثنعش الظهر. والموعد الثاني: من الساعة اثنعش الظهر إلى الساعة الواحدة بعد الظهر.';
 
   expect(result).toMatchObject({
     kind: 'ok',
@@ -109,19 +111,21 @@ it('prepares exact, natural Saudi Arabic availability wording', async () => {
       output: {
         status: 'available',
         date: '2026-11-29',
-        spokenSummary:
-          'المواعيد المتاحة مع Elie Saide يوم الأحد، ٢٩ نوفمبر: أول موعد: من الساعة أحدعش ونص الصباح إلى اثنعش الظهر. والموعد الثاني: من اثنعش الظهر إلى الواحدة بعد الظهر.',
+        spokenSummary: expectedSummary,
         moreSlotsOnDate: false,
         laterDatesAvailable: false,
       },
       followUpInstructions: expect.stringContaining(
-        'Speak only the returned spokenSummary verbatim',
+        'قل النص الموجود بين علامتي الاقتباس حرفيًا من أول كلمة لآخر كلمة.',
       ),
     },
   });
   if (result.kind === 'ok') {
     expect(result.outcome.output).not.toHaveProperty('slots');
     expect(result.outcome.output).not.toHaveProperty('timeZone');
+    expect(result.outcome.followUpInstructions).toContain(expectedSummary);
+    expect(expectedSummary).toContain('أحدعش ونص الصبح');
+    expect(expectedSummary).not.toContain('الصباح');
   }
   expect(JSON.stringify(result)).not.toContain('"timeFrom"');
   expect(JSON.stringify(result)).not.toContain('"timeTo"');
@@ -129,11 +133,42 @@ it('prepares exact, natural Saudi Arabic availability wording', async () => {
   expect(JSON.stringify(result)).not.toContain('13:00');
 });
 
+it('embeds the complete literal availability reply, including the later-date offer', async () => {
+  const tool = createCheckTutorCalendarTool(async () => ({
+    status: 'available',
+    slots: [
+      { date: '2026-11-29', timeFrom: '11:30', timeTo: '12:00' },
+      { date: '2026-12-01', timeFrom: '09:00', timeTo: '10:00' },
+    ],
+  }));
+  const result = await tool.invoke(
+    { tutorId: 'elie-id', tutorName: 'Elie Saide' },
+    { ...context, locale: 'ar-SA' },
+  );
+  const expectedSummary =
+    'المواعيد المتاحة مع Elie Saide يوم الأحد، ٢٩ نوفمبر: أول موعد: من الساعة أحدعش ونص الصبح إلى الساعة اثنعش الظهر.';
+
+  expect(result).toMatchObject({
+    kind: 'ok',
+    outcome: {
+      output: {
+        laterDatesAvailable: true,
+        moreTimesPrompt: 'وفيه مواعيد بتواريخ ثانية، إذا ودك أذكرها لك.',
+      },
+    },
+  });
+  if (result.kind === 'ok') {
+    expect(result.outcome.followUpInstructions).toContain(
+      `«${expectedSummary} وفيه مواعيد بتواريخ ثانية، إذا ودك أذكرها لك.»`,
+    );
+  }
+});
+
 it('provides canonical spoken ranges for Saudi booking confirmation', async () => {
   const tool = createPrepareCourseBookingTool();
 
   for (const [timeFrom, timeTo, spokenRange] of [
-    ['11:30', '12:00', 'من الحادي عشر والنصف الصباح إلى اثنعش الظهر'],
+    ['11:30', '12:00', 'من الحادي عشر والنصف الصبح إلى اثنعش الظهر'],
     ['12:00', '13:00', 'من اثنعش الظهر إلى الواحدة بعد الظهر'],
   ] as const) {
     const result = await tool.invoke(

@@ -1228,6 +1228,95 @@ describe('tool calls', () => {
     },
   );
 
+  it('continues calendar search when the caller says “اذكرها”', async () => {
+    const getAvailability = vi.fn(
+      async (_token: string, input: { fromDate: string }) => ({
+        status: 'available' as const,
+        slots:
+          input.fromDate <= '2026-11-29'
+            ? [
+                {
+                  date: '2026-11-29',
+                  timeFrom: '11:30',
+                  timeTo: '12:00',
+                },
+                {
+                  date: '2026-12-01',
+                  timeFrom: '09:00',
+                  timeTo: '10:00',
+                },
+              ]
+            : [
+                {
+                  date: '2026-12-01',
+                  timeFrom: '09:00',
+                  timeTo: '10:00',
+                },
+              ],
+      }),
+    );
+    const t = createHarness(undefined, true, 'student', 'ar-SA', [
+      createCheckTutorCalendarTool(getAvailability),
+    ]);
+    await t.controller.notifyAccountCheck(
+      'verified',
+      'server-token',
+      'student',
+    );
+    await acknowledgeToolUpdate(t.controller, t.sent);
+    await t.controller.handleEvent({
+      type: 'response.created',
+      response: { id: 'verification-notice' },
+    });
+    await t.controller.handleEvent({
+      type: 'response.done',
+      response: { id: 'verification-notice' },
+    });
+    t.sent.length = 0;
+
+    await t.controller.handleEvent({
+      type: 'conversation.item.input_audio_transcription.completed',
+      item_id: 'calendar-initial-request',
+      transcript: 'شو التوقيت المتاح إله؟',
+    });
+    await toolTurn(t.controller, 'calendar-initial', 'check_tutor_calendar', {
+      tutorId: 'elie-id',
+      tutorName: 'Elie Saide',
+    });
+    await t.controller.handleEvent({
+      type: 'response.created',
+      response: { id: 'calendar-initial-answer' },
+    });
+    await t.controller.handleEvent({
+      type: 'response.done',
+      response: { id: 'calendar-initial-answer' },
+    });
+    t.sent.length = 0;
+
+    await t.controller.handleEvent({
+      type: 'conversation.item.input_audio_transcription.completed',
+      item_id: 'calendar-more-request',
+      transcript: 'اذكرها',
+    });
+
+    const response = t.sent.find((event) => event.type === 'response.create');
+    expect(response?.response?.tool_choice).toEqual({
+      type: 'function',
+      name: 'check_tutor_calendar',
+    });
+    expect(response?.response?.instructions).toContain('FUNCTION-CALL-ONLY');
+
+    await toolTurn(t.controller, 'calendar-more', 'check_tutor_calendar', {
+      tutorId: 'elie-id',
+      tutorName: 'Elie Saide',
+    });
+    expect(getAvailability).toHaveBeenNthCalledWith(
+      2,
+      'server-token',
+      expect.objectContaining({ fromDate: '2026-11-30' }),
+    );
+  });
+
   it('reapplies catalog and direct-booking routing on later caller turns', async () => {
     const t = createHarness(undefined, true);
 

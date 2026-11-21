@@ -185,9 +185,15 @@ function isTutorDatesAffirmation(value: string): boolean {
     .normalize('NFKC')
     .toLocaleLowerCase()
     .replace(/[^\p{L}\p{N}\s]+/gu, ' ')
+    .replace(/\s+/gu, ' ')
     .trim();
-  return /^(?:أذكر|اذكر|أذكار|اذكار|نعم|ايه|إيه|أكيد|اكيد|حلو|تمام|يلا|لو سمحت|ابغى|بدي)$/u.test(
-    normalized,
+  return (
+    /^(?:أذكر|اذكر|أذكار|اذكار)(?:ها|هم)?(?:\s+(?:لي|من فضلك|لو سمحت))?$/u.test(
+      normalized,
+    ) ||
+    /^(?:نعم|ايه|إيه|أكيد|اكيد|حلو|تمام|طيب|يلا|لو سمحت|ابغى|بدي)$/u.test(
+      normalized,
+    )
   );
 }
 
